@@ -7,6 +7,7 @@ import { Controllers } from './controller/AllController';
 
 const app = createExpressServer({
     defaultErrorHandler: false,
+    cors: true,
     controllers: Controllers,
     middlewares: []
 });
