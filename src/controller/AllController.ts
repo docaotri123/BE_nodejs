@@ -1,5 +1,5 @@
-import { ProductController } from './ProductController';
+import { UserController } from './UserController';
 
 export const Controllers = [
-    ProductController
+    UserController
 ];
