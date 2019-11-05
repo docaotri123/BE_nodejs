@@ -6,6 +6,9 @@ import { getConnection } from 'typeorm';
 import { User } from '../entity/User';
 import { ROLE, HASH_STR } from '../constant';
 import { Role } from '../entity/Role';
+import { LoginModel } from '../model/LoginModel';
+import * as jwt from 'jsonwebtoken';
+import { SECRET } from '../app.config';
 
 @JsonController()
 export class UserController {
@@ -32,6 +35,32 @@ export class UserController {
             console.log(err);
             return new ResponseObj(500, err);
         }
-    }    
+    }
+
+    @Post('/login')
+    async Login(@Body() loginModel: LoginModel) {
+        try {
+            const password = Md5.hashStr(loginModel.Password + HASH_STR);
+            const user = await getConnection()
+            .createQueryBuilder()
+            .select('u.id')
+            .addSelect('u.email')
+            .from(User, 'u')
+            .leftJoinAndMapOne('u.role', 'role', 'r', 'u.role = r.id')
+            .where('u.email = :email AND u.password = :password',
+                {email: loginModel.Username, password: password})
+            .getOne();
+            
+            if (!user) {
+                return new ResponseObj(400, 'username or password incorrect' );
+            }
+            const token = jwt.sign({ user: user }, SECRET, {expiresIn: '10h'});
+            
+            return new ResponseObj(200, 'Login Succsessfully', {token: token});
+        } catch (err) {
+            console.log(err);
+            return new ResponseObj(500, err);
+        }
+    }
 
 }
