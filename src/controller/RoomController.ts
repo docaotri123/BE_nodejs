@@ -1,4 +1,4 @@
-import { JsonController, Get, Post, Put, Body } from 'routing-controllers';
+import { JsonController, Get, Post, Put, Body, Param, Delete } from 'routing-controllers';
 import { ResponseObj } from '../model/response';
 import { checkPermission } from '../middleware/Authorizer';
 import { ROLE } from '../constant';
@@ -12,8 +12,7 @@ import { Type } from '../entity/Type';
 export class RoomController {
     @Get('/rooms')
     async ListRoom(
-        @checkPermission([ROLE.ADMIN]) permission
-    ) {
+        @checkPermission([ROLE.ADMIN]) permission) {
         try {
             if (!permission.allow && !permission.user) {
                 return new ResponseObj(400, 'Token expired');
@@ -39,8 +38,7 @@ export class RoomController {
     @Post('/room')
     async CreateRoom(
         @checkPermission([ROLE.ADMIN]) permission,
-        @Body() roomModel: RoomModel
-    ) {
+        @Body() roomModel: RoomModel) {
 
         try {
             if (!permission.allow && !permission.user) {
@@ -71,7 +69,8 @@ export class RoomController {
     }
 
     @Put('/room/:id')
-    async EditRoom() {
+    async EditRoom(
+        @checkPermission([ROLE.ADMIN]) permission) {
         try {
             return new ResponseObj(200, 'Edit room successfully');
         } catch (err) {
@@ -80,9 +79,13 @@ export class RoomController {
         }
     }
 
-    @Put('/room/:id')
-    async DeleteRoom() {
+    @Delete('/room/:id')
+    async DeleteRoom(
+        @Param('id') id: number,
+        @checkPermission([ROLE.ADMIN]) permission) {
         try {
+            await getConnection().manager.delete(Room, {id: id});
+
             return new ResponseObj(200, 'Delete room successfully');
         } catch (err) {
             console.log(err);
