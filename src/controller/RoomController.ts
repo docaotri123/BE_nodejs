@@ -11,9 +11,25 @@ import { Type } from '../entity/Type';
 @JsonController()
 export class RoomController {
     @Get('/rooms')
-    async ListRoom() {
+    async ListRoom(
+        @checkPermission([ROLE.ADMIN]) permission
+    ) {
         try {
-            return new ResponseObj(200, 'get list rooms successfully');
+            if (!permission.allow && !permission.user) {
+                return new ResponseObj(400, 'Token expired');
+            }
+
+            if (!permission.allow && permission.user) {
+                return new ResponseObj(401, 'Not authorizer');
+            }
+            const rooms = await getConnection().manager
+                .createQueryBuilder()
+                .select('r')
+                .from(Room, 'r')
+                .leftJoinAndMapOne('r.type', 'type', 't', 't.id = r.type')
+                .getMany();
+
+            return new ResponseObj(200, 'get list rooms successfully', rooms);
         } catch (err) {
             console.log(err);
             return new ResponseObj(500, err);

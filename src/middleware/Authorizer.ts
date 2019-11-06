@@ -8,8 +8,9 @@ export function checkPermission(roles?: string[]) {
         required: true,
         value: action => {
             try {
-                const token = action.request.headers['token'];
+                const token = action.request.headers['token'];                
                 const decoded = jwt.verify(token, SECRET);
+
                 if (!decoded.user) {
                     return new Authorizer(false, null);
                 }
@@ -17,6 +18,7 @@ export function checkPermission(roles?: string[]) {
                 if (!roles.includes(role)) {
                     return new Authorizer(false, decoded.user);
                 }
+                
                 return new Authorizer(true, decoded.user);
             } catch (err) {
                 console.log(err);
