@@ -18,6 +18,9 @@ export class Room {
     @Column()
     price: number;
 
+    @Column({default: false})
+    isDeleted: boolean;
+
     @ManyToOne(type => Type, type => type.id)
     @JoinColumn()
     type: Type;

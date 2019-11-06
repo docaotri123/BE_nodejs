@@ -26,6 +26,7 @@ export class RoomController {
                 .select('r')
                 .from(Room, 'r')
                 .leftJoinAndMapOne('r.type', 'type', 't', 't.id = r.type')
+                .where('isDeleted = :isDeleted', {isDeleted: false})
                 .getMany();
 
             return new ResponseObj(200, 'get list rooms successfully', rooms);
@@ -84,7 +85,12 @@ export class RoomController {
         @Param('id') id: number,
         @checkPermission([ROLE.ADMIN]) permission) {
         try {
-            await getConnection().manager.delete(Room, {id: id});
+            await getConnection()
+                .createQueryBuilder()
+                .update(Room)
+                .set({ isDeleted: true})
+                .where('id = :id', { id: id })
+                .execute();
 
             return new ResponseObj(200, 'Delete room successfully');
         } catch (err) {

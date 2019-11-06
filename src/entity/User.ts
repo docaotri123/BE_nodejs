@@ -18,7 +18,7 @@ export class User {
     @Column('text', {select: false})
     password: any;
 
-    @ManyToOne(type => Role, role => role.id)
+    @ManyToOne(type => Role, role => role.id, {nullable: false})
     @JoinColumn()
     role: Role;
 
