@@ -85,6 +85,14 @@ export class RoomController {
         @Param('id') id: number,
         @checkPermission([ROLE.ADMIN]) permission) {
         try {
+            if (!permission.allow && !permission.user) {
+                return new ResponseObj(400, 'Token expired');
+            }
+
+            if (!permission.allow && permission.user) {
+                return new ResponseObj(401, 'Not authorizer');
+            }
+            
             await getConnection()
                 .createQueryBuilder()
                 .update(Room)
