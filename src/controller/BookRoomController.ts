@@ -4,6 +4,10 @@ import { ResponseObj } from '../model/response';
 import { checkPermission } from '../middleware/Authorizer';
 import { ROLE } from '../constant';
 import { Room } from '../entity/Room';
+import { MomentDateTime } from '../util/DateTimeUTC';
+import { getConnection } from 'typeorm';
+import { User } from '../entity/User';
+import { BookRoom } from '../entity/BookRoom';
 
 @JsonController()
 export class BookRoomController {
@@ -16,10 +20,44 @@ export class BookRoomController {
             if (!permission.allow && !permission.user) {
                 return new ResponseObj(400, 'Token expired');
             }
-
+    
             if (!permission.allow && permission.user) {
                 return new ResponseObj(401, 'Not authorizer');
             }
+            // check room and user exist
+            const room = await getConnection().manager.findOne(Room, {id: id});
+            const user = await getConnection().manager.findOne(User, { id: BRBody.userId });
+            if (!room) {
+                return new ResponseObj(400, 'Room is not exists');
+            }
+            if (!user) {
+                return new ResponseObj(400, 'User is not exists');
+            }
+            // check book room
+            const startDate = MomentDateTime.getDateUtc(BRBody.startDate);
+            const endDate = MomentDateTime.getDateUtc(BRBody.endDate);
+            
+            const booking = await getConnection().createQueryBuilder()
+                .select('br.id')
+                .from(BookRoom, 'br')
+                .where('br.startDate <= :startDate AND br.endDate >= :startDate AND roomId = :id')
+                .setParameters({ id: id, startDate: startDate })
+                .getOne();
+
+            if (booking) {
+                return new ResponseObj(400, 'Room have booked');
+            }
+
+            // save
+            const bookRoom = new BookRoom();
+            bookRoom.startDate = startDate;
+            bookRoom.endDate = endDate;
+            bookRoom.user = user;
+            bookRoom.room = room;
+
+            await getConnection().manager.save(bookRoom);
+
+            return new ResponseObj(201, 'Booing Room is successfully');
             
 
         } catch (err) {

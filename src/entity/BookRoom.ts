@@ -7,10 +7,10 @@ export class BookRoom {
     @PrimaryGeneratedColumn('increment')
     id: number;
 
-    @Column({nullable: false})
+    @Column({ type: 'datetime', nullable: false})
     startDate: Date;
 
-    @Column({nullable: false})
+    @Column({type: 'datetime', nullable: false})
     endDate: Date;
 
     @Column({default: false})
@@ -18,7 +18,7 @@ export class BookRoom {
 
     @ManyToOne(type => User, user => user.id, {nullable: false})
     @JoinColumn()
-    role: User;
+    user: User;
 
     @ManyToOne(type => Room, room => room.id, {nullable: false})
     @JoinColumn()

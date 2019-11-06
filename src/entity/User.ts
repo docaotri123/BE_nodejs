@@ -6,7 +6,7 @@ import { Role } from './Role';
 export class User {
 
     @PrimaryGeneratedColumn('uuid')
-    id: number;
+    id: string;
 
     @Column({nullable: false})
     @IsEmail()
