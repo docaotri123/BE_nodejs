@@ -54,7 +54,7 @@ export class UserController {
             if (!user) {
                 return new ResponseObj(400, 'username or password incorrect' );
             }
-            const token = jwt.sign({ user: user }, SECRET, {expiresIn: '10h'});
+            const token = jwt.sign({ user: user }, SECRET, {expiresIn: '24h'});
             
             return new ResponseObj(200, 'Login Succsessfully', {token: token});
         } catch (err) {
