@@ -12,7 +12,7 @@ import { BookRoom } from '../entity/BookRoom';
 @JsonController()
 export class BookRoomController {
 
-    @Post('/availablerooms')
+    @Post('/availableroomsday')
     async getAvailableRoom(@Body() body: any) {
         try {
             const startDay = MomentDateTime.startSpecificDayUtc(body.time);
@@ -131,5 +131,99 @@ export class BookRoomController {
         }
     }
 
+    @Put('/editbooking/:id')
+    async editBooking(
+        @Param('id') idBooking: number,
+        @checkPermission([ROLE.ADMIN, ROLE.CUSTOMER]) permission) {
+        try {
+            if (!permission.allow && !permission.user) {
+                return new ResponseObj(400, 'Token expired');
+            }
+    
+            if (!permission.allow && permission.user) {
+                return new ResponseObj(401, 'Not authorizer');
+            }
+            return new ResponseObj(201, 'Edit book room is successfully');
+        } catch (err) {
+            console.log(err);
+            return new ResponseObj(500, err);
+        }
+    }
 
+    @Post('/availableroomstime')
+    async getAvailableRoomTime(@Body() body: any) {
+        try {
+            return new ResponseObj(200, 'available rooms in time');
+        } catch (err) {
+            console.log(err);
+            return new ResponseObj(500, err);
+        }
+    }
+
+    @Post('/bookrooms')
+    async bookRooms(
+        @checkPermission([ROLE.ADMIN, ROLE.CUSTOMER]) permission,
+        @Body() roomsBody: any[]) {
+        try {
+            if (!permission.allow && !permission.user) {
+                return new ResponseObj(400, 'Token expired');
+            }
+    
+            if (!permission.allow && permission.user) {
+                return new ResponseObj(401, 'Not authorizer');
+            }
+
+            if (!roomsBody.length) {
+                return new ResponseObj(204, 'No Data');
+            }
+            // check booking
+            const promiseRoomsBooking = roomsBody.map(room => {
+                const startDate = MomentDateTime.getDateUtc(room.startDate);
+                return this.getBooking(+room.roomId, startDate);
+            });
+            const roomsBooking = await Promise.all(promiseRoomsBooking);
+            const arrIdRoomBooking = roomsBooking
+                .filter(room => room)
+                .map(room => room.room.id);
+            if (arrIdRoomBooking.length) {
+                return new ResponseObj(402, 'many rooms have booked!', arrIdRoomBooking);
+            }
+
+            // process save
+            const user = await getConnection().manager.findOne(User, {id: roomsBody[0].userId});
+            const promiseRooms = roomsBody.map( room => {
+                return getConnection().manager.findOne(Room, {id: room.roomId});
+            });
+            const rooms = await Promise.all(promiseRooms);
+
+            const promiseBookRooms = roomsBody.map( (room, index) => {
+                const startDate = MomentDateTime.getDateUtc(room.startDate);
+                const endDate = MomentDateTime.getDateUtc(room.endDate);
+                const bookRoom = new BookRoom();
+                bookRoom.startDate = startDate;
+                bookRoom.endDate = endDate;
+                bookRoom.user = user;
+                bookRoom.room = rooms[index];
+
+                return getConnection().manager.save(bookRoom);
+            });
+            
+            await Promise.all(promiseBookRooms);
+            
+            return new ResponseObj(201, 'Booking rooms is successfully');
+        } catch (err) {
+            console.log(err);
+            return new ResponseObj(500, err);
+        }
+    }
+
+    private getBooking(id: number, startDate: Date) {
+        return getConnection().createQueryBuilder()
+        .select('br.id')
+        .from(BookRoom, 'br')
+        .leftJoinAndMapOne('br.room', 'Room', 'r', 'r.id = br.roomId')
+        .where('br.startDate <= :startDate AND br.endDate >= :startDate AND roomId = :id')
+        .setParameters({ id: id, startDate: startDate })
+        .getOne();
+    }
 }
