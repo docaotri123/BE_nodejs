@@ -1,4 +1,4 @@
-import { JsonController, Body, Post, Param, Get } from 'routing-controllers';
+import { JsonController, Body, Post, Param, Get, Put } from 'routing-controllers';
 import { BookRoomModel } from '../model/BookRoomModel';
 import { ResponseObj } from '../model/response';
 import { checkPermission } from '../middleware/Authorizer';
@@ -25,9 +25,9 @@ export class BookRoomController {
             const booksByDay = await getConnection().createQueryBuilder()
                 .select('br')
                 .from(BookRoom, 'br')
-                .where('br.startDate <= :startDay AND br.endDate >= :startDay')
+                .where('br.startDate <= :startDay AND br.endDate >= :startDay AND isCancelled = :isCancelled')
                 .leftJoinAndMapOne('br.room', 'Room', 'r', 'r.id = br.roomId')
-                .setParameters({startDay: startDay})
+                .setParameters({startDay: startDay, isCancelled: false})
                 .getMany();
 
             const results = rooms.filter(room => {
@@ -92,6 +92,39 @@ export class BookRoomController {
             return new ResponseObj(201, 'Booing Room is successfully');
             
 
+        } catch (err) {
+            console.log(err);
+            return new ResponseObj(500, err);
+        }
+    }
+
+    @Put('/cancelroom/:id')
+    async cancelRoom(
+        @Param('id') idBooking: number,
+        @checkPermission([ROLE.ADMIN, ROLE.CUSTOMER]) permission) {
+        try {
+            if (!permission.allow && !permission.user) {
+                return new ResponseObj(400, 'Token expired');
+            }
+    
+            if (!permission.allow && permission.user) {
+                return new ResponseObj(401, 'Not authorizer');
+            }
+            const room = await getConnection().manager.findOne(BookRoom, {id: idBooking});
+            const today = MomentDateTime.getCurrentDate();
+
+            if (today >= room.startDate) {
+                return new ResponseObj(402, 'startDate greater today ! can not cancel room');
+            }
+
+            await getConnection()
+                .createQueryBuilder()
+                .update(BookRoom)
+                .set({ isCancelled: true })
+                .where('id = :id', { id: idBooking })
+                .execute();
+            
+            return new ResponseObj(200, 'Cancel room successfully');
         } catch (err) {
             console.log(err);
             return new ResponseObj(500, err);
