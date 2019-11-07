@@ -11,4 +11,20 @@ export class MomentDateTime {
         return moment.utc(date).toDate();
     }
 
+    public static endSpecificDayUtc(timestamp) {
+        return moment.utc(timestamp).set({
+            'hour' : 23,
+            'minute': 59,
+            'second': 59
+        }).toDate();
+    }
+
+    public static startSpecificDayUtc(timestamp) {
+        return moment.utc(timestamp).set({
+            'hour' : 0,
+            'minute': 0,
+            'second': 0
+        }).toDate();
+    }
+
 }

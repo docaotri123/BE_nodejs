@@ -21,6 +21,7 @@ export function checkPermission(roles?: string[]) {
                 
                 return new Authorizer(true, decoded.user);
             } catch (err) {
+                console.log('err autho');
                 console.log(err);
                 
                 return new Authorizer(false, null);

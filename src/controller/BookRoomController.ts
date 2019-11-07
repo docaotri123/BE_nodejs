@@ -1,4 +1,4 @@
-import { JsonController, Body, Post, Param } from 'routing-controllers';
+import { JsonController, Body, Post, Param, Get } from 'routing-controllers';
 import { BookRoomModel } from '../model/BookRoomModel';
 import { ResponseObj } from '../model/response';
 import { checkPermission } from '../middleware/Authorizer';
@@ -11,8 +11,40 @@ import { BookRoom } from '../entity/BookRoom';
 
 @JsonController()
 export class BookRoomController {
+
+    @Post('/availablerooms')
+    async getAvailableRoom(@Body() body: any) {
+        try {
+            const startDay = MomentDateTime.startSpecificDayUtc(body.time);
+
+            const rooms = await getConnection().createQueryBuilder()
+                .select('r')
+                .from(Room, 'r')
+                .getMany();
+
+            const booksByDay = await getConnection().createQueryBuilder()
+                .select('br')
+                .from(BookRoom, 'br')
+                .where('br.startDate <= :startDay AND br.endDate >= :startDay')
+                .leftJoinAndMapOne('br.room', 'Room', 'r', 'r.id = br.roomId')
+                .setParameters({startDay: startDay})
+                .getMany();
+
+            const results = rooms.filter(room => {
+                return !booksByDay.find(book => book.room.id === room.id);
+            });
+
+            return new ResponseObj(200, 'okie', results);
+        } catch (err) {
+            console.log('hai');
+            
+            console.log(err);
+            return new ResponseObj(500, err);
+        }
+    }
+
     @Post('/bookroom/:id')
-    async RegisterAccount(
+    async bookRoom(
         @Param('id') id: number,
         @checkPermission([ROLE.ADMIN, ROLE.CUSTOMER]) permission,
         @Body() BRBody: BookRoomModel) {
@@ -65,4 +97,6 @@ export class BookRoomController {
             return new ResponseObj(500, err);
         }
     }
+
+
 }
