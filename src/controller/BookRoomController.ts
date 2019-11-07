@@ -36,8 +36,6 @@ export class BookRoomController {
 
             return new ResponseObj(200, 'okie', results);
         } catch (err) {
-            console.log('hai');
-            
             console.log(err);
             return new ResponseObj(500, err);
         }
@@ -153,7 +151,61 @@ export class BookRoomController {
     @Post('/availableroomstime')
     async getAvailableRoomTime(@Body() body: any) {
         try {
-            return new ResponseObj(200, 'available rooms in time');
+            const startTime = MomentDateTime.getDateUtc(body.startTime);
+            const endTime = MomentDateTime.getDateUtc(body.endTime);
+
+            const rooms = await getConnection().createQueryBuilder()
+                .select('r')
+                .from(Room, 'r')
+                .getMany();
+
+            // TH1
+            const booksByTime1 = getConnection().createQueryBuilder()
+                .select('br')
+                .from(BookRoom, 'br')
+                .where('br.startDate >= :startTime AND br.startDate <= :endTime AND isCancelled = :isCancelled')
+                .leftJoinAndMapOne('br.room', 'Room', 'r', 'r.id = br.roomId')
+                .setParameters({startTime: startTime, endTime: endTime, isCancelled: false})
+                .getMany();
+            
+                // TH2
+            const booksByTime2 = getConnection().createQueryBuilder()
+                .select('br')
+                .from(BookRoom, 'br')
+                .where('br.startDate <= :startTime AND br.endDate >= :endTime AND isCancelled = :isCancelled')
+                .leftJoinAndMapOne('br.room', 'Room', 'r', 'r.id = br.roomId')
+                .setParameters({startTime: startTime, endTime: endTime, isCancelled: false})
+                .getMany();
+            // Th3
+            const booksByTime3 = getConnection().createQueryBuilder()
+                .select('br')
+                .from(BookRoom, 'br')
+                .where('br.endDate >= :startTime AND br.endDate <= :endTime AND isCancelled = :isCancelled')
+                .leftJoinAndMapOne('br.room', 'Room', 'r', 'r.id = br.roomId')
+                .setParameters({ startTime: startTime, endTime: endTime, isCancelled: false })
+                .getMany();
+            // TH4
+            const booksByTime4 = getConnection().createQueryBuilder()
+                .select('br')
+                .from(BookRoom, 'br')
+                .where('br.startDate >= :startTime AND br.endDate <= :endTime AND isCancelled = :isCancelled')
+                .leftJoinAndMapOne('br.room', 'Room', 'r', 'r.id = br.roomId')
+                .setParameters({startTime: startTime, endTime: endTime, isCancelled: false})
+                .getMany();
+            const promiseBooksByTime = [booksByTime1, booksByTime2, booksByTime3, booksByTime4];
+            const booksByTime = await Promise.all(promiseBooksByTime);
+            const mergeArr = booksByTime.reduce((arr, books) => {
+                const temp = books.reduce((arr2 , item) => {
+                    return [...arr2, item];
+                }, []);
+                return [...arr, ...temp];
+            }, []);
+            
+            const results = rooms.filter(room => {
+                return !mergeArr.find(book => book.room.id === room.id);
+            });
+
+            return new ResponseObj(200, 'available rooms in time', results);
         } catch (err) {
             console.log(err);
             return new ResponseObj(500, err);
