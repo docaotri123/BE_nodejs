@@ -28,6 +28,6 @@ const getTimeCheckBooking = () => {
 export const excercise4 = () => {
     return {
         isBooking: checkBooking(),
-        time: getTimeCheckBooking()
+        time: getTimeCheckBooking() +'ms'
     }
 }

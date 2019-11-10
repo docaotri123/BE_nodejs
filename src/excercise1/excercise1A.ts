@@ -68,7 +68,6 @@ export const excercise1 = () => {
 
     return {
         data: RotationK(data, K),
-        time: getTimeRotationK() + 'ms',
-        memory: getMemory2D() +'bits'
+        time: getTimeRotationK() + 'ms'
     }
 };

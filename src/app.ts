@@ -13,7 +13,7 @@ console.log(excercise1());
 
 // excercise 4
 console.log('Excercise 4');
-// console.log(excercise4());
+console.log(excercise4());
 
 
 app.listen(SERVER_PORT, () => {
