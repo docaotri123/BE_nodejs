@@ -2,7 +2,7 @@ import { performance } from "perf_hooks";
 
 const ARRIVALS = [1, 3, 5];
 const DEPARTURES = [2, 6, 10];
-const K = 2;
+const K = 1;
 
 const checkBooking = (arrivals = ARRIVALS, 
     departures = DEPARTURES, k = K ) => {

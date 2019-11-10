@@ -6,7 +6,7 @@ export const data = [
     [0, 0, 0]
 ];
 
-const K = 2;
+const K = 1;
 
 const Rotation = (grid = data) => {
     const newArr = [];
@@ -40,21 +40,6 @@ const RotationK = (grid = data, k: number) => {
     return result;
 }
 
-const getBitsOfNumber = (data: number) => {
-    const bits = data.toString(2);
-    return bits.length;
-}
-
-const getMemory2D = (grid = data) => {
-    const n = grid.length;
-    let results = 0;
-    for (let i = 0; i < n; i++) {
-        for (let j = 0; j < n; j++) {
-            results += getBitsOfNumber(grid[i][j]);
-        }
-    }
-    return results;
-}
 
 const getTimeRotationK = () => {
     const t0 = performance.now();
