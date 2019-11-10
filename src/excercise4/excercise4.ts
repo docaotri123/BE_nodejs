@@ -11,7 +11,7 @@ const checkBooking = (arrivals = ARRIVALS,
         return false;
     }
     for(let i = 1; i< n; i++) {
-        if(arrivals[i] < departures[i-1] && k <= 1){
+        if(arrivals[i] < departures[i-1] && k <= 1 || arrivals[i] > departures[i]){
             return false;
         }
     }
