@@ -10,6 +10,18 @@ import { Type } from '../entity/Type';
 
 @JsonController()
 export class RoomController {
+
+    @Get('/test')
+    async Test() {
+        try {
+
+            return new ResponseObj(200, 'Test okie');
+        } catch (err) {
+            console.log(err);
+            return new ResponseObj(500, err);
+        }
+    }
+
     @Get('/rooms')
     async ListRoom(
         @checkPermission([ROLE.ADMIN]) permission) {
