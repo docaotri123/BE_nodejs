@@ -16,19 +16,19 @@ export class RoomController {
         try {
 
 
-            // const types = await getConnection().manager
-            // .createQueryBuilder()
-            // .select('r')
-            // .from(Type, 'r')
-            // .getMany();
+            const types = await getConnection().manager
+            .createQueryBuilder()
+            .select('r')
+            .from(Type, 'r')
+            .getMany();
 
-            // console.log('hoho');
-            // console.log(types);
+            console.log('hoho');
+            console.log(types);
             
 
             return new ResponseObj(200, 'Test okie');
         } catch (err) {
-            console.log('------ERRORRRR-------');
+            console.log('------ERRORRRR API-------');
             console.log(err);
             return new ResponseObj(500, err);
         }
