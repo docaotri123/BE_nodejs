@@ -16,7 +16,7 @@ export class RoomController {
         try {
             const types = await getConnection().manager
             .createQueryBuilder()
-            .select('r.type')
+            .select('r')
             .from(Type, 'r')
             .getMany();
             console.log(types);
