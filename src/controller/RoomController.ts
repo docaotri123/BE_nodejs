@@ -14,6 +14,8 @@ export class RoomController {
     @Get('/test')
     async Test() {
         try {
+
+            
             const types = await getConnection().manager
             .createQueryBuilder()
             .select('r')
