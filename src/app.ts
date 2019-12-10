@@ -13,6 +13,7 @@ const app = createExpressServer({
 
 console.log('infomation cloud db1');
 console.log(SQL_HOST);
+console.log(SQL_PORT);
 console.log(SQL_DATABASE);
 console.log(SQL_USER);
 console.log(SQL_PASSWORD);
@@ -38,7 +39,7 @@ createConnection({
     })
     .catch(err => {
         console.log(' ** connetc DB fail **');
-        console.log(err)
+        console.dir(err, {depth: 0})
     });
 
 
