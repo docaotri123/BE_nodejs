@@ -3,12 +3,12 @@
   "version": "0.0.1",
   "description": "Awesome project developed with TypeORM.",
   "devDependencies": {
-    "ts-node": "3.3.0",
-    "@types/node": "^8.0.29",
-    "typescript": "3.3.3333"
+    "nodemon": "^1.19.4"    
   },
   "dependencies": {
-    "@types/node": "^8.10.58",
+    "ts-node": "3.3.0",
+    "@types/node": "^8.0.29",
+    "typescript": "3.3.3333",
     "class-transformer": "^0.2.3",
     "class-validator": "^0.11.0",
     "cors": "^2.8.5",
@@ -16,7 +16,6 @@
     "jsonwebtoken": "^8.5.1",
     "moment": "^2.24.0",
     "mysql": "^2.14.1",
-    "nodemon": "^1.19.4",
     "reflect-metadata": "^0.1.10",
     "routing-controllers": "^0.8.0",
     "ts-md5": "^1.2.7",
