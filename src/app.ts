@@ -11,8 +11,9 @@ const app = createExpressServer({
     middlewares: [__dirname + '/middleware/*.ts']
 });
 
-console.log(SQL_HOST)
-console.log(SQL_DATABASE)
+console.log('infomation cloud db');
+console.log(SQL_HOST);
+console.log(SQL_DATABASE);
 
 createConnection({
     type: 'mysql',
