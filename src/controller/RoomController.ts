@@ -28,7 +28,7 @@ export class RoomController {
 
             return new ResponseObj(200, 'Test okie');
         } catch (err) {
-            console.log('------ERRORRRR API-------');
+            console.log('------ERRORRRR API Test-------');
             console.log(err);
             return new ResponseObj(500, err);
         }
