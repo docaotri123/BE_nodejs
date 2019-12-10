@@ -11,6 +11,9 @@ const app = createExpressServer({
     middlewares: [__dirname + '/middleware/*.ts']
 });
 
+console.log(SQL_HOST  + '--' + SQL_PORT) + '--' + SQL_USER + '--' + SQL_DATABASE);
+
+
 createConnection({
     type: 'mysql',
     host: SQL_HOST,
@@ -30,7 +33,10 @@ createConnection({
     .then((conn) => {
         console.log(`Server connect DB !`);
     })
-    .catch(err => console.log(err));
+    .catch(err => {
+        console.log('connetc DB fail');
+        console.log(err)
+    });
 
 
 app.listen(SERVER_PORT, () => {
