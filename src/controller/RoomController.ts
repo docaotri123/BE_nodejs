@@ -14,8 +14,15 @@ export class RoomController {
     @Get('/test')
     async Test() {
         try {
+            const types = await getConnection().manager
+            .createQueryBuilder()
+            .select('r.type')
+            .from(Type, 'r')
+            .getMany();
+            console.log(types);
+            
 
-            return new ResponseObj(200, 'Test okie');
+            return new ResponseObj(200, 'Test okie', types);
         } catch (err) {
             console.log(err);
             return new ResponseObj(500, err);
