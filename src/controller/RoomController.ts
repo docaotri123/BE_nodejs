@@ -19,11 +19,14 @@ export class RoomController {
             .select('r')
             .from(Type, 'r')
             .getMany();
+
+            console.log('hoho');
             console.log(types);
             
 
             return new ResponseObj(200, 'Test okie', types);
         } catch (err) {
+            console.log('------ERRORRRR-------');
             console.log(err);
             return new ResponseObj(500, err);
         }
