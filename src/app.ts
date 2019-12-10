@@ -11,7 +11,7 @@ const app = createExpressServer({
     middlewares: [__dirname + '/middleware/*.ts']
 });
 
-console.log('infomation cloud db1');
+console.log('infomation cloud db2');
 console.log(SQL_HOST);
 console.log(SQL_PORT);
 console.log(SQL_DATABASE);
