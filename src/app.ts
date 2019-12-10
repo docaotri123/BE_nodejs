@@ -11,26 +11,26 @@ const app = createExpressServer({
     middlewares: [__dirname + '/middleware/*.ts']
 });
 
-// createConnection({
-//     type: 'mysql',
-//     host: SQL_HOST,
-//     port: SQL_PORT,
-//     username: SQL_USER,
-//     password: SQL_PASSWORD,
-//     database: SQL_DATABASE,
-//     extra: {
-//         'socketPath': SQL_INSTANCE_CONNECTION_NAME
-//     },
-//     entities: [
-//         __dirname + TYPE_ORM_ENTITY_LOCATION
-//     ],
-//     synchronize: true,
-//     logging: false
-// })
-//     .then((conn) => {
-//         console.log(`Server connect DB !`);
-//     })
-//     .catch(err => console.log(err));
+createConnection({
+    type: 'mysql',
+    host: SQL_HOST,
+    port: SQL_PORT,
+    username: SQL_USER,
+    password: SQL_PASSWORD,
+    database: SQL_DATABASE,
+    extra: {
+        'socketPath': SQL_INSTANCE_CONNECTION_NAME
+    },
+    entities: [
+        __dirname + TYPE_ORM_ENTITY_LOCATION
+    ],
+    synchronize: true,
+    logging: false
+})
+    .then((conn) => {
+        console.log(`Server connect DB !`);
+    })
+    .catch(err => console.log(err));
 
 
 app.listen(SERVER_PORT, () => {
