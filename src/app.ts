@@ -11,8 +11,12 @@ const app = createExpressServer({
     middlewares: [__dirname + '/middleware/*.ts']
 });
 
-console.log('****infomation cloud db4***');
+console.log('****infomation cloud db5***');
+console.log(SQL_HOST);
 console.log(SQL_PORT);
+console.log(SQL_USER);
+console.log(SQL_DATABASE);
+console.log(SQL_PASSWORD);
 
 
 createConnection({
@@ -22,9 +26,6 @@ createConnection({
     username: SQL_USER,
     password: SQL_PASSWORD,
     database: SQL_DATABASE,
-    extra: {
-        'socketPath': SQL_INSTANCE_CONNECTION_NAME
-    },
     entities: [
         __dirname + TYPE_ORM_ENTITY_LOCATION
     ],
