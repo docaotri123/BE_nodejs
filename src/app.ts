@@ -12,12 +12,6 @@ const app = createExpressServer({
 });
 
 console.log('****infomation cloud db5***');
-console.log(SQL_HOST);
-console.log(SQL_PORT);
-console.log(SQL_USER);
-console.log(SQL_DATABASE);
-console.log(SQL_PASSWORD);
-
 
 createConnection({
     type: 'mysql',
@@ -26,14 +20,23 @@ createConnection({
     username: SQL_USER,
     password: SQL_PASSWORD,
     database: SQL_DATABASE,
+    migrations: ["migration/*.ts"],
     entities: [
         __dirname + TYPE_ORM_ENTITY_LOCATION
     ],
-    synchronize: true,
+    cli: {
+        migrationsDir: "migration"
+    },
+    synchronize: false,
     logging: false
 })
-    .then((conn) => {
+    .then(async (conn) => {
+        await conn.runMigrations();
         console.log(`Server connect DB !`);
+        app.listen(SERVER_PORT, () => {
+            console.log(`Server is running port ${SERVER_PORT}`);
+        
+        });
     })
     .catch(err => {
         console.log(' ** connetc DB fail **');
@@ -41,7 +44,4 @@ createConnection({
     });
 
 
-app.listen(SERVER_PORT, () => {
-    console.log(`Server is running port ${SERVER_PORT}`);
 
-});

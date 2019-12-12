@@ -6,4 +6,6 @@ export class Role {
     id: number;
     @Column('varchar')
     role: string;
+    @Column('varchar')
+    test: string;
 }

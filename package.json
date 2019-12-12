@@ -24,6 +24,7 @@
   "scripts": {
     "start": "ts-node src/app.ts",
     "watch": "nodemon --watch 'src/**/*.ts' --ignore 'src/**/*.spec.ts' --exec nodemon src/app.ts",
+    "typeorm": "ts-node ./node_modules/typeorm/cli.js",
     "lint": "tslint -p tsconfig.json"
   }
 }
