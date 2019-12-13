@@ -21,8 +21,4 @@ export class User {
     @ManyToOne(type => Role, role => role.id, {nullable: false})
     @JoinColumn()
     role: Role;
-
-    @Column({nullable: true})
-    address: string;
-
 }
