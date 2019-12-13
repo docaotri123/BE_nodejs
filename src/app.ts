@@ -7,6 +7,7 @@ import { SQL_USER, SQL_PASSWORD, SQL_DATABASE, SQL_PORT, SQL_HOST } from '../env
 
 (async () => {
     try {
+        console.log('connect SQL');
         const connection = await createConnection({
             type: "mysql",
             host: SQL_HOST,
