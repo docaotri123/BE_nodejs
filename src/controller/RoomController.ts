@@ -6,6 +6,7 @@ import { RoomModel } from '../model/RoomModel';
 import { Room } from '../entity/Room';
 import { getConnection } from 'typeorm';
 import { Type } from '../entity/Type';
+import { User } from '../entity/User';
 
 
 @JsonController()
@@ -16,17 +17,13 @@ export class RoomController {
         try {
 
 
-            const types = await getConnection().manager
+            const users = await getConnection().manager
             .createQueryBuilder()
-            .select('r')
-            .from(Type, 'r')
+            .select('u')
+            .from(User, 'u')
             .getMany();
 
-            console.log('hoho');
-            console.log(types);
-            
-
-            return new ResponseObj(200, 'Test okie', types);
+            return new ResponseObj(200, 'Test okie', users);
         } catch (err) {
             console.log('------ERRORRRR API Test-------');
             console.log(err);

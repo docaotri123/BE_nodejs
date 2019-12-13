@@ -22,4 +22,7 @@ export class User {
     @JoinColumn()
     role: Role;
 
+    @Column({nullable: true})
+    address: string;
+
 }

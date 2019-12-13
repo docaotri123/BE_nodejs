@@ -2,10 +2,10 @@
    "type": "mysql",
    "host": "localhost",
    "port": 3306,
-   "username": "test",
-   "password": "test",
-   "database": "test",
-   "synchronize": true,
+   "username": "root",
+   "password": "DepTrai123",
+   "database": "hotel",
+   "synchronize": false,
    "logging": false,
    "entities": [
       "src/entity/**/*.ts"
