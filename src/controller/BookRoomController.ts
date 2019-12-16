@@ -159,50 +159,21 @@ export class BookRoomController {
                 .from(Room, 'r')
                 .getMany();
 
-            // TH1
-            const booksByTime1 = getConnection().createQueryBuilder()
+            const booksByTime = await getConnection().createQueryBuilder()
                 .select('br')
                 .from(BookRoom, 'br')
-                .where('br.startDate >= :startTime AND br.startDate <= :endTime AND isCancelled = :isCancelled')
-                .leftJoinAndMapOne('br.room', 'Room', 'r', 'r.id = br.roomId')
-                .setParameters({startTime: startTime, endTime: endTime, isCancelled: false})
-                .getMany();
-            
-                // TH2
-            const booksByTime2 = getConnection().createQueryBuilder()
-                .select('br')
-                .from(BookRoom, 'br')
-                .where('br.startDate <= :startTime AND br.endDate >= :endTime AND isCancelled = :isCancelled')
-                .leftJoinAndMapOne('br.room', 'Room', 'r', 'r.id = br.roomId')
-                .setParameters({startTime: startTime, endTime: endTime, isCancelled: false})
-                .getMany();
-            // Th3
-            const booksByTime3 = getConnection().createQueryBuilder()
-                .select('br')
-                .from(BookRoom, 'br')
-                .where('br.endDate >= :startTime AND br.endDate <= :endTime AND isCancelled = :isCancelled')
+                .where(`br.startDate >= :startTime AND br.startDate <= :endTime
+                OR br.startDate <= :startTime AND br.endDate >= :endTime
+                OR br.endDate >= :startTime AND br.endDate <= :endTime
+                OR br.startDate >= :startTime AND br.endDate <= :endTime
+                AND isCancelled = :isCancelled`)
                 .leftJoinAndMapOne('br.room', 'Room', 'r', 'r.id = br.roomId')
                 .setParameters({ startTime: startTime, endTime: endTime, isCancelled: false })
                 .getMany();
-            // TH4
-            const booksByTime4 = getConnection().createQueryBuilder()
-                .select('br')
-                .from(BookRoom, 'br')
-                .where('br.startDate >= :startTime AND br.endDate <= :endTime AND isCancelled = :isCancelled')
-                .leftJoinAndMapOne('br.room', 'Room', 'r', 'r.id = br.roomId')
-                .setParameters({startTime: startTime, endTime: endTime, isCancelled: false})
-                .getMany();
-            const promiseBooksByTime = [booksByTime1, booksByTime2, booksByTime3, booksByTime4];
-            const booksByTime = await Promise.all(promiseBooksByTime);
-            const mergeArr = booksByTime.reduce((arr, books) => {
-                const temp = books.reduce((arr2 , item) => {
-                    return [...arr2, item];
-                }, []);
-                return [...arr, ...temp];
-            }, []);
+            
             
             const results = rooms.filter(room => {
-                return !mergeArr.find(book => book.room.id === room.id);
+                return !booksByTime.find(book => book.room.id === room.id);
             });
 
             return new ResponseObj(200, 'available rooms in time', results);
