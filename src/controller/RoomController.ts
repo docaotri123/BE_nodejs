@@ -15,8 +15,6 @@ export class RoomController {
     @Get('/test')
     async Test() {
         try {
-
-
             const users = await getConnection().manager
             .createQueryBuilder()
             .select('u')

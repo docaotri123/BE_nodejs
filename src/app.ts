@@ -21,13 +21,9 @@ import { SQL_USER, SQL_PASSWORD, SQL_DATABASE, SQL_PORT, SQL_HOST } from '../env
             migrations: [
                "src/migration/**/*.ts"
             ],
-            subscribers: [
-               "src/subscriber/**/*.ts"
-            ],
             cli: {
                entitiesDir: "src/entity",
-               migrationsDir: "src/migration",
-               subscribersDir: "src/subscriber"
+               migrationsDir: "src/migration"
             }
          });
         await connection.runMigrations();
