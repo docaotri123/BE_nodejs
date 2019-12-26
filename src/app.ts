@@ -3,6 +3,8 @@ import { createExpressServer } from 'routing-controllers';
 import { SERVER_PORT } from './app.config';
 import { createConnection } from 'typeorm';
 import { SQL_USER, SQL_PASSWORD, SQL_DATABASE, SQL_PORT, SQL_HOST } from '../environments/environment';
+import { handleBookingRoom } from './util/BookingRoom';
+import { listenToQueue } from './job_queue/worker';
 
 
 (async () => {
@@ -37,6 +39,9 @@ import { SQL_USER, SQL_PASSWORD, SQL_DATABASE, SQL_PORT, SQL_HOST } from '../env
         controllers: [__dirname + '/controller/*.ts'],
         middlewares: [__dirname + '/middleware/*.ts']
     });
+
+    await listenToQueue(handleBookingRoom);
+
     app.listen(SERVER_PORT, () => {
         console.log(`Server is running port ${SERVER_PORT}`);
 

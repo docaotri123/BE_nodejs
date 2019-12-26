@@ -7,6 +7,8 @@
   },
   "dependencies": {
     "@types/node": "^8.10.59",
+    "amqplib": "^0.5.5",
+    "bluebird": "^3.7.2",
     "class-transformer": "^0.2.3",
     "class-validator": "^0.11.0",
     "cors": "^2.8.5",

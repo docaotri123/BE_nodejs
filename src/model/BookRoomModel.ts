@@ -1,5 +1,6 @@
 export class BookRoomModel {
-    startDate: Date;
-    endDate: Date;
+    startDate: number;
+    endDate: number;
     userId: string;
+    roomID: number;
 }
