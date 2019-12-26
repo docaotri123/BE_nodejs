@@ -14,7 +14,6 @@ const assertAndSendToQueue = channel => {
 
     return channel.assertQueue(workQueue, assertQueueOptions)
         .then(() => channel.sendToQueue(workQueue, bufferedData, sendToQueueOptions))
-        // .then(() => channel.close())
 }
 
 const sendHardTaskToQueue = () => amqp.connect(uri)

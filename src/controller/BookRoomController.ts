@@ -2,16 +2,67 @@ import { JsonController, Body, Post, Param, Get, Put } from 'routing-controllers
 import { BookRoomModel } from '../model/BookRoomModel';
 import { ResponseObj } from '../model/response';
 import { checkPermission } from '../middleware/Authorizer';
-import { ROLE } from '../constant';
+import { ROLE, BOOKING } from '../constant';
 import { Room } from '../entity/Room';
 import { MomentDateTime } from '../util/DateTimeUTC';
 import { getConnection } from 'typeorm';
 import { User } from '../entity/User';
 import { BookRoom } from '../entity/BookRoom';
 import { startPublisher } from '../job_queue/publisher';
+import { TempBookRoom } from '../entity/TempBookRoom';
+import { BookingQueueModel } from '../model/BookingQueue';
 
 @JsonController()
 export class BookRoomController {
+
+    @Post('/statusbookingrooms')
+    async getStatusBookingRoom(
+        @checkPermission([ROLE.ADMIN, ROLE.CUSTOMER]) permission,
+        @Body() arrBody: BookRoomModel[]) {
+        try {
+            if (!permission.allow && !permission.user) {
+                return new ResponseObj(400, 'Token expired');
+            }
+    
+            if (!permission.allow && permission.user) {
+                return new ResponseObj(401, 'Not authorizer');
+            }
+
+            const arrStatus = [];
+            for(let i = 0; i < arrBody.length; i++) {
+                const item = arrBody[i];
+                const startDate = MomentDateTime.getDateUtc(item.startDate);
+
+                const tempBooking = await getConnection()
+                .createQueryBuilder()
+                .select("temp")
+                .from(TempBookRoom, "temp")
+                .where(`temp.userId = :userId AND
+                    temp.roomId = :roomId AND
+                    temp.startDate = :startDate AND 
+                    temp.status = :status`)
+                .leftJoinAndMapOne('temp.room', 'Room', 'r', 'r.id = temp.roomId')
+                .leftJoinAndMapOne('temp.user', 'User', 'u', 'u.id = temp.userId')
+                .setParameters({
+                    startDate: startDate,
+                    roomId: item.roomID,
+                    userId: item.userId,
+                    status: BOOKING.SUCCESS
+                })
+                .getOne();
+
+                if(tempBooking && tempBooking.status === BOOKING.SUCCESS) {
+                    arrStatus.push(tempBooking);
+                }
+            }
+
+            return new ResponseObj(200, 'status booking rooms', arrStatus);
+
+        } catch(err) {
+            console.log(err);
+            return new ResponseObj(500, err);
+        }
+    }
 
     @Post('/availableroomsday')
     async getAvailableRoom(@Body() body: any) {
@@ -55,7 +106,29 @@ export class BookRoomController {
                 return new ResponseObj(401, 'Not authorizer');
             }
 
-            await startPublisher(BRBody);
+            const tempBooking = new TempBookRoom();
+            const room = await getConnection().manager.findOne(Room, { id: BRBody.roomID });
+            const user = await getConnection().manager.findOne(User, { id: BRBody.userId });
+            tempBooking.startDate = MomentDateTime.getDateUtc(BRBody.startDate);
+            tempBooking.endDate = MomentDateTime.getDateUtc(BRBody.endDate);
+            tempBooking.status = BOOKING.PENDING;
+            tempBooking.user = user;
+            tempBooking.room = room;
+
+            if (!tempBooking.room) {
+                return new ResponseObj(400, 'Room is not exists');
+            }
+            if (!tempBooking.user) {
+                return new ResponseObj(400, 'User is not exists');
+            }
+
+            const result = await getConnection().manager.save(tempBooking);
+
+            const itemQueue = new BookingQueueModel();
+            itemQueue.dataAPI = BRBody;
+            itemQueue.tempBookingId = result.id;
+
+            await startPublisher(itemQueue);
 
             return new ResponseObj(200, 'Booing Room is pending');
         } catch (err) {

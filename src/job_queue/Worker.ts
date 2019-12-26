@@ -10,8 +10,6 @@ const assertAndConsumeQueue = (channel, doWork) => {
     console.log('Worker is running! Waiting for new messages...')
 
     const ackMsg = (msg) => resolve(msg)
-        .tap(() => console.log('msg'))
-        .tap(() => console.log(JSON.parse(msg.content.toString())))
         .tap(() => doWork(JSON.parse(msg.content.toString())))
         .then((msg) => channel.ack(msg))
 
