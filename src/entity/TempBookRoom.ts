@@ -13,6 +13,9 @@ export class TempBookRoom {
     @Column({type: 'datetime', nullable: false})
     endDate: Date;
 
+    @Column({type: 'nvarchar' , default: 'pending'})
+    status: string;
+
     @ManyToOne(type => User, user => user.id, {nullable: false})
     @JoinColumn()
     user: User;
