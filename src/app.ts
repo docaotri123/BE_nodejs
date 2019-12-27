@@ -1,51 +1,25 @@
 import 'reflect-metadata';
 import { createExpressServer } from 'routing-controllers';
-import { SERVER_PORT } from './app.config';
 import { createConnection } from 'typeorm';
-import { SQL_USER, SQL_PASSWORD, SQL_DATABASE, SQL_PORT, SQL_HOST } from '../environments/environment';
 import { handleBookingRoom } from './util/BookingRoom';
-import { listenToQueue } from './job_queue/worker';
+import { listenToBookingQueue } from './job_queue/worker';
+import { SERVER_PORT , sqlConfig, appConfig } from './app.config';
 
 
 (async () => {
     try {
         console.log('connect SQL');
-        const connection = await createConnection({
-            type: "mysql",
-            host: SQL_HOST,
-            port: SQL_PORT,
-            username: SQL_USER,
-            password: SQL_PASSWORD,
-            database: SQL_DATABASE,
-            entities: [
-               "src/entity/**/*.ts"
-            ],
-            migrations: [
-               "src/migration/**/*.ts"
-            ],
-            cli: {
-               entitiesDir: "src/entity",
-               migrationsDir: "src/migration"
-            }
-         });
+        const connection = await createConnection(sqlConfig);
         await connection.runMigrations();
     } catch (error) {
         console.log('Error while connecting to the database', error);
         return error;
     }
-    const app = createExpressServer({
-        defaultErrorHandler: false,
-        cors: true,
-        controllers: [__dirname + '/controller/*.ts'],
-        middlewares: [__dirname + '/middleware/*.ts']
-    });
+    const app = createExpressServer(appConfig);
 
-    await listenToQueue(handleBookingRoom);
+    await listenToBookingQueue(handleBookingRoom);
 
-    app.listen(SERVER_PORT, () => {
-        console.log(`Server is running port ${SERVER_PORT}`);
-
-    });
+    app.listen(SERVER_PORT, () => console.log(`Server is running port ${SERVER_PORT}`));
 })();
 
 

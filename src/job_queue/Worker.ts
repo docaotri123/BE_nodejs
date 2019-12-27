@@ -18,6 +18,6 @@ const assertAndConsumeQueue = (channel, doWork) => {
         .then(() => channel.consume(workQueue, ackMsg, consumeQueueOptions))
 }
   
-export const listenToQueue = (doWork) => amqp.connect(uri)
+export const listenToBookingQueue = (doWork) => amqp.connect(uri)
     .then(connection => connection.createChannel())
     .then(channel => assertAndConsumeQueue(channel, doWork))
