@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { createExpressServer } from 'routing-controllers';
 import { createConnection } from 'typeorm';
-import { handleBookingRoom } from './util/BookingRoom';
+import { handleBookingRoom } from './service/BookingRoomService';
 import { listenToBookingQueue } from './job_queue/worker';
 import { SERVER_PORT , sqlConfig, appConfig } from './app.config';
 

@@ -11,6 +11,7 @@ import { BookRoom } from '../entity/BookRoom';
 import { startPublisher } from '../job_queue/publisher';
 import { TempBookRoom } from '../entity/TempBookRoom';
 import { BookingQueueModel } from '../model/BookingQueue';
+import { mapExistsInTwoArray } from '../service/BookingRoomService';
 
 @JsonController()
 export class BookRoomController {
@@ -39,21 +40,17 @@ export class BookRoomController {
                 .from(TempBookRoom, "temp")
                 .where(`temp.userId = :userId AND
                     temp.roomId = :roomId AND
-                    temp.startDate = :startDate AND 
-                    temp.status = :status`)
+                    temp.startDate = :startDate`)
                 .leftJoinAndMapOne('temp.room', 'Room', 'r', 'r.id = temp.roomId')
                 .leftJoinAndMapOne('temp.user', 'User', 'u', 'u.id = temp.userId')
                 .setParameters({
                     startDate: startDate,
                     roomId: item.roomID,
                     userId: item.userId,
-                    status: BOOKING.SUCCESS
                 })
                 .getOne();
 
-                if(tempBooking && tempBooking.status === BOOKING.SUCCESS) {
-                    arrStatus.push(tempBooking);
-                }
+                arrStatus.push(tempBooking);
             }
 
             return new ResponseObj(200, 'status booking rooms', arrStatus);
@@ -122,11 +119,11 @@ export class BookRoomController {
                 return new ResponseObj(400, 'User is not exists');
             }
 
-            const result = await getConnection().manager.save(tempBooking);
+            const tempBookingResult = await getConnection().manager.save(tempBooking);
 
             const itemQueue = new BookingQueueModel();
             itemQueue.dataAPI = BRBody;
-            itemQueue.tempBookingId = result.id;
+            itemQueue.tempBookingId = tempBookingResult.id;
 
             await startPublisher(itemQueue);
 
@@ -224,8 +221,8 @@ export class BookRoomController {
         }
     }
 
-    @Post('/bookrooms')
-    async bookRooms(
+    @Post('/bookingrooms')
+    async bookingRooms(
         @checkPermission([ROLE.ADMIN, ROLE.CUSTOMER]) permission,
         @Body() roomsBody: any[]) {
         try {
@@ -236,45 +233,48 @@ export class BookRoomController {
             if (!permission.allow && permission.user) {
                 return new ResponseObj(401, 'Not authorizer');
             }
-
-            if (!roomsBody.length) {
-                return new ResponseObj(204, 'No Data');
-            }
-            // check booking
-            const promiseRoomsBooking = roomsBody.map(room => {
-                const startDate = MomentDateTime.getDateUtc(room.startDate);
-                return this.getBooking(+room.roomId, startDate);
-            });
-            const roomsBooking = await Promise.all(promiseRoomsBooking);
-            const arrIdRoomBooking = roomsBooking
-                .filter(room => room)
-                .map(room => room.room.id);
-            if (arrIdRoomBooking.length) {
-                return new ResponseObj(402, 'many rooms have booked!', arrIdRoomBooking);
+            // check exists rooms and users
+            const length = roomsBody.length;
+            const roomsPromise = [];
+            const usersPromise = [];
+            for (let i = 0; i < length; i++) {
+                const room = roomsBody[i];
+                roomsPromise.push(getConnection().manager.findOne(Room, { id: room.roomID }))
+                usersPromise.push(getConnection().manager.findOne(User, { id: room.userId }))
             }
 
-            // process save
-            const user = await getConnection().manager.findOne(User, {id: roomsBody[0].userId});
-            const promiseRooms = roomsBody.map( room => {
-                return getConnection().manager.findOne(Room, {id: room.roomId});
-            });
-            const rooms = await Promise.all(promiseRooms);
+            const rooms = await Promise.all(roomsPromise);
+            const users = await Promise.all(usersPromise);
 
-            const promiseBookRooms = roomsBody.map( (room, index) => {
-                const startDate = MomentDateTime.getDateUtc(room.startDate);
-                const endDate = MomentDateTime.getDateUtc(room.endDate);
-                const bookRoom = new BookRoom();
-                bookRoom.startDate = startDate;
-                bookRoom.endDate = endDate;
-                bookRoom.user = user;
-                bookRoom.room = rooms[index];
+            if(rooms.some(room => !room)) {
+                const results = mapExistsInTwoArray(roomsBody, rooms);
+                return new ResponseObj(400, 'Many rooms have no exists', results);
+            }
 
-                return getConnection().manager.save(bookRoom);
-            });
+            if(users.some(user => !user)) {
+                const results = mapExistsInTwoArray(roomsBody, users);
+                return new ResponseObj(400, 'Many users have no exists', results);
+            }
+            // create tempBooking and push queue
+            for (let i = 0; i < length; i++) {
+                const room = roomsBody[i];
+                const tempBooking = new TempBookRoom();
+                tempBooking.startDate = MomentDateTime.getDateUtc(room.startDate);
+                tempBooking.endDate = MomentDateTime.getDateUtc(room.endDate);
+                tempBooking.status = BOOKING.PENDING;
+                tempBooking.user = users[i];
+                tempBooking.room = rooms[i];
+
+                const tempBookingResult = await getConnection().manager.save(tempBooking);
+                const itemQueue = new BookingQueueModel();
+                itemQueue.dataAPI = room;
+                itemQueue.tempBookingId = tempBookingResult.id;
+    
+                await startPublisher(itemQueue);
+            }
             
-            await Promise.all(promiseBookRooms);
-            
-            return new ResponseObj(201, 'Booking rooms is successfully');
+
+            return new ResponseObj(201, 'Booking rooms is pending');
         } catch (err) {
             console.log(err);
             return new ResponseObj(500, err);

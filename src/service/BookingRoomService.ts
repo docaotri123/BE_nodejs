@@ -2,7 +2,7 @@ import { BookRoomModel } from "../model/BookRoomModel";
 import { Room } from "../entity/Room";
 import { User } from "../entity/User";
 import { getConnection } from "typeorm";
-import { MomentDateTime } from "./DateTimeUTC";
+import { MomentDateTime } from "../util/DateTimeUTC";
 import { BookRoom } from "../entity/BookRoom";
 import { BOOKING } from "../constant";
 import { BookingQueueModel } from "../model/BookingQueue";
@@ -34,6 +34,13 @@ export const handleBookingRoom = async (itemQueue: BookingQueueModel) => {
         await getConnection().manager.save(bookRoom);
     }
 
+}
+
+export const mapExistsInTwoArray = (source: any[], destination: any[]) => {
+    return source.map((value, index) => {
+        const isExists = destination[index] ? true : false;
+        return {... value, isExists: isExists};
+    });
 }
 
 const checkBooking = async (BRModel: BookRoomModel) => {
