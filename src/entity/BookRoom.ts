@@ -1,6 +1,7 @@
 import { Column, Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { User } from './User';
 import { Room } from './Room';
+import { GroupBooking } from './GroupBooking';
 
 @Entity()
 export class BookRoom {
@@ -16,9 +17,9 @@ export class BookRoom {
     @Column({default: false})
     isCancelled: boolean;
 
-    @ManyToOne(type => User, user => user.id, {nullable: false})
+    @ManyToOne(type => GroupBooking, g => g.id, {nullable: false})
     @JoinColumn()
-    user: User;
+    group: GroupBooking;
 
     @ManyToOne(type => Room, room => room.id, {nullable: false})
     @JoinColumn()

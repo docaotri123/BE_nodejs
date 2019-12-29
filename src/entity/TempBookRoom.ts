@@ -1,6 +1,6 @@
 import { Column, Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
-import { User } from './User';
 import { Room } from './Room';
+import { GroupBooking } from './GroupBooking';
 
 @Entity()
 export class TempBookRoom {
@@ -16,9 +16,9 @@ export class TempBookRoom {
     @Column({type: 'nvarchar' , default: 'pending'})
     status: string;
 
-    @ManyToOne(type => User, user => user.id, {nullable: false})
+    @ManyToOne(type => GroupBooking, g => g.id, {nullable: false})
     @JoinColumn()
-    user: User;
+    group: GroupBooking;
 
     @ManyToOne(type => Room, room => room.id, {nullable: false})
     @JoinColumn()
