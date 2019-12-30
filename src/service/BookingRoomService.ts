@@ -7,31 +7,42 @@ import { BookRoom } from "../entity/BookRoom";
 import { BOOKING } from "../constant";
 import { BookingQueueModel } from "../model/BookingQueue";
 import { TempBookRoom } from "../entity/TempBookRoom";
+import { GroupBooking } from "../entity/GroupBooking";
 
 export const handleBookingRoom = async (itemQueue: BookingQueueModel) => {
-    const bookRoomModel = itemQueue.dataAPI;
-    const tempBookingId = itemQueue.tempBookingId;        
-    const isBooked = await checkBooking(bookRoomModel);
-    const statusBooking = isBooked ? BOOKING.BOOKED : BOOKING.SUCCESS;
-
+    const bookings = itemQueue.dataAPI;
+    const tempBookingIds = itemQueue.tempBookingIds;
+    const length = bookings.length;
+    let flag = true;
     // find tempBooking and update
-    await getConnection().createQueryBuilder()
-    .update(TempBookRoom)
-    .set({ status: statusBooking })
-    .where('id = :tempBookingId', { tempBookingId: tempBookingId})
-    .execute();
+    for (let i = 0; i < length; i++) {
+        const booking = bookings[i];
+        const isBooked = await checkBooking(booking);
+        if (isBooked) {
+            flag = false;
+        }
+        const statusBooking = isBooked ? BOOKING.BOOKED : BOOKING.SUCCESS;
 
+        await getConnection().createQueryBuilder()
+            .update(TempBookRoom)
+            .set({ status: statusBooking })
+            .where('id = :tempBookingId', { tempBookingId: tempBookingIds[i] })
+            .execute();
+    }
 
-    if(statusBooking === BOOKING.SUCCESS) {
-        const room = await getConnection().manager.findOne(Room, {id: bookRoomModel.roomID});
-        const user = await getConnection().manager.findOne(User, { id: bookRoomModel.userId });
-        const bookRoom = new BookRoom();
-        bookRoom.startDate = MomentDateTime.getDateUtc(bookRoomModel.startDate);
-        bookRoom.endDate = MomentDateTime.getDateUtc(bookRoomModel.endDate);
-        bookRoom.user = user;
-        bookRoom.room = room;
-
-        await getConnection().manager.save(bookRoom);
+    // add booking_room
+    if (flag) {
+        const group = await getConnection().manager.findOne(GroupBooking, { id: itemQueue.groupId });
+        for (let i = 0; i < length; i++) {
+            const room = await getConnection().manager.findOne(Room, {id: bookings[i].roomID});
+            const bookRoom = new BookRoom();
+            bookRoom.startDate = MomentDateTime.getDateUtc(bookings[i].startDate);
+            bookRoom.endDate = MomentDateTime.getDateUtc(bookings[i].endDate);
+            bookRoom.group = group;
+            bookRoom.room = room;
+    
+            await getConnection().manager.save(bookRoom);
+        }
     }
 
 }
@@ -41,6 +52,28 @@ export const mapExistsInTwoArray = (source: any[], destination: any[]) => {
         const isExists = destination[index] ? true : false;
         return {... value, isExists: isExists};
     });
+}
+
+export const minStartDate = (arr: any[]) => {
+    let min = arr[0];
+    for (let i = 1; i < arr.length; i++) {
+        const obj = arr[i];
+        if (obj.startDate < min.startDate) {
+            min = obj;
+        }
+    }
+    return min;
+}
+
+export const maxEndDate = (arr: any[]) => {
+    let max = arr[0];
+    for (let i = 1; i < arr.length; i++) {
+        const obj = arr[i];
+        if (obj.endDate > max.endDate) {
+            max = obj;
+        }
+    }
+    return max;
 }
 
 const checkBooking = async (BRModel: BookRoomModel) => {

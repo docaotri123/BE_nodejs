@@ -1,6 +1,7 @@
 import { BookRoomModel } from "./BookRoomModel";
 
 export class BookingQueueModel {
-    dataAPI: BookRoomModel;
-    tempBookingId: number;
+    dataAPI: BookRoomModel[];
+    groupId: number;
+    tempBookingIds: number[];
 }
