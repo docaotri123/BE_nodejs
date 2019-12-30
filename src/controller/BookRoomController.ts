@@ -11,7 +11,7 @@ import { BookRoom } from '../entity/BookRoom';
 import { startPublisher } from '../job_queue/publisher';
 import { TempBookRoom } from '../entity/TempBookRoom';
 import { BookingQueueModel } from '../model/BookingQueue';
-import { mapExistsInTwoArray, minStartDate, maxEndDate } from '../service/BookingRoomService';
+import { BookingService} from '../service/BookingService';
 import { GroupBooking } from '../entity/GroupBooking';
 
 @JsonController()
@@ -253,8 +253,8 @@ export class BookRoomController {
             }
             const group = new GroupBooking();
             group.user = user;
-            const min = minStartDate(roomsBody).startDate;
-            const max = maxEndDate(roomsBody).endDate;            
+            const min = BookingService.minStartDate(roomsBody).startDate;
+            const max = BookingService.maxEndDate(roomsBody).endDate;            
             group.startDate = MomentDateTime.getDateUtc(min);
             group.endDate = MomentDateTime.getDateUtc(max);
             const groupResult = await getConnection().manager.save(group);
@@ -288,15 +288,5 @@ export class BookRoomController {
             console.log(err);
             return new ResponseObj(500, err);
         }
-    }
-
-    private getBooking(id: number, startDate: Date) {
-        return getConnection().createQueryBuilder()
-        .select('br.id')
-        .from(BookRoom, 'br')
-        .leftJoinAndMapOne('br.room', 'Room', 'r', 'r.id = br.roomId')
-        .where('br.startDate <= :startDate AND br.endDate >= :startDate AND roomId = :id')
-        .setParameters({ id: id, startDate: startDate })
-        .getOne();
     }
 }

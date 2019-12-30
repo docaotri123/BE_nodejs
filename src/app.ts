@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { createExpressServer } from 'routing-controllers';
 import { createConnection } from 'typeorm';
-import { handleBookingRoom } from './service/BookingRoomService';
+import { BookingService } from './service/BookingService';
 import { listenToBookingQueue } from './job_queue/worker';
 import { SERVER_PORT , sqlConfig, appConfig } from './app.config';
 
@@ -17,7 +17,7 @@ import { SERVER_PORT , sqlConfig, appConfig } from './app.config';
     }
     const app = createExpressServer(appConfig);
 
-    await listenToBookingQueue(handleBookingRoom);
+    await listenToBookingQueue(BookingService.handleBookingRoom);
 
     app.listen(SERVER_PORT, () => console.log(`Server is running port ${SERVER_PORT}`));
 })();
