@@ -3,7 +3,15 @@
   "version": "0.0.1",
   "description": "Awesome project developed with TypeORM.",
   "devDependencies": {
-    "nodemon": "^1.19.4"
+    "@types/mocha": "^5.2.7",
+    "chai": "^4.2.0",
+    "chai-http": "^4.3.0",
+    "gulp": "^4.0.2",
+    "gulp-mocha": "^7.0.2",
+    "gulp-util": "^3.0.8",
+    "mocha": "^6.2.2",
+    "nodemon": "^1.19.4",
+    "sinon": "^8.0.1"
   },
   "dependencies": {
     "@types/node": "^8.10.59",
@@ -23,9 +31,13 @@
     "typeorm": "^0.2.21",
     "typescript": "3.3.3333"
   },
+  "nodemonConfig": {
+    "ignore": ["src/**/*.spec.ts"]
+  },
   "scripts": {
     "start": "ts-node src/app.ts",
-    "watch": "nodemon --watch 'src/**/*.ts' --ignore 'src/**/*.spec.ts' --exec nodemon src/app.ts",
+    "watch": "nodemon --watch 'src/**/*.ts' --ignore 'src//test**/*.spec.ts' --exec nodemon src/app.ts",
+    "test": "mocha -r ts-node/register src/test/**/*.spec.ts",
     "lint": "tslint -p tsconfig.json"
   }
 }

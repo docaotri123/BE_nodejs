@@ -3,24 +3,23 @@ import { createExpressServer } from 'routing-controllers';
 import { createConnection } from 'typeorm';
 import { BookingService } from './service/BookingService';
 import { listenToBookingQueue } from './job_queue/worker';
-import { SERVER_PORT , sqlConfig, appConfig } from './app.config';
+import { SERVER_PORT, sqlConfig, appConfig } from './app.config';
+
+console.log('connect SQL');
+createConnection(sqlConfig)
+    .then((connection) => {
+        connection.runMigrations();
+        listenToBookingQueue(BookingService.handleBookingRoom);
+    })
+    .catch(err => {
+        console.log('Error while connecting to the database', err);
+        return err;
+    })
+const app = createExpressServer(appConfig);
+
+app.listen(SERVER_PORT, () => console.log(`Server is running port ${SERVER_PORT}`));
 
 
-(async () => {
-    try {
-        console.log('connect SQL');
-        const connection = await createConnection(sqlConfig);
-        await connection.runMigrations();
-    } catch (error) {
-        console.log('Error while connecting to the database', error);
-        return error;
-    }
-    const app = createExpressServer(appConfig);
-
-    await listenToBookingQueue(BookingService.handleBookingRoom);
-
-    app.listen(SERVER_PORT, () => console.log(`Server is running port ${SERVER_PORT}`));
-})();
-
+export default app;
 
 

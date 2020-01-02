@@ -11,5 +11,8 @@
       "emitDecoratorMetadata": true,
       "experimentalDecorators": true,
       "sourceMap": true
-   }
+   },
+   "exclude": [
+      "./src/test/**/*.spec.ts"
+    ]
 }

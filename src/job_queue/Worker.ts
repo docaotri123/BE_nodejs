@@ -7,7 +7,6 @@ const consumeQueueOptions = { noAck: false }
 const { uri, workQueue } = rabbitConfig
 
 const assertAndConsumeQueue = (channel, doWork) => {
-    console.log('Worker is running! Waiting for new messages...')
 
     const ackMsg = (msg) => resolve(msg)
         .tap(() => doWork(JSON.parse(msg.content.toString())))

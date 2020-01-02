@@ -11,8 +11,8 @@ import { BookRoom } from '../entity/BookRoom';
 import { startPublisher } from '../job_queue/publisher';
 import { TempBookRoom } from '../entity/TempBookRoom';
 import { BookingQueueModel } from '../model/BookingQueue';
-import { BookingService} from '../service/BookingService';
 import { GroupBooking } from '../entity/GroupBooking';
+import { BookingService } from '../service/BookingService';
 
 @JsonController()
 export class BookRoomController {
@@ -97,7 +97,7 @@ export class BookRoomController {
     @Post('/bookingroom')
     async bookRoom(
         @checkPermission([ROLE.ADMIN, ROLE.CUSTOMER]) permission,
-        @Body() BookingsBody: BookRoomModel[]) {
+        @Body() BookingsBody: BookRoomModel) {
         try {
             if (!permission.allow && !permission.user) {
                 return new ResponseObj(400, 'Token expired');
@@ -106,7 +106,7 @@ export class BookRoomController {
             if (!permission.allow && permission.user) {
                 return new ResponseObj(401, 'Not authorizer');
             }
-            const booking = BookingsBody[0];
+            const booking = BookingsBody;
             const user = await getConnection().manager.findOne(User, { id: booking.userId });
             if (!user) {
                 return new ResponseObj(400, 'User is not exists');
@@ -134,7 +134,7 @@ export class BookRoomController {
             const tempBookingResult = await getConnection().manager.save(tempBooking);
 
             const itemQueue = new BookingQueueModel();
-            itemQueue.dataAPI = BookingsBody;
+            itemQueue.dataAPI = [BookingsBody];
             itemQueue.groupId = groupResult.id;
             itemQueue.tempBookingIds = [tempBookingResult.id];
 

@@ -8,6 +8,10 @@ import { BOOKING } from "../constant";
 import { BookingQueueModel } from "../model/BookingQueue";
 import { TempBookRoom } from "../entity/TempBookRoom";
 import { GroupBooking } from "../entity/GroupBooking";
+import { BookRoomRepository } from '../repository/BookRoomRepository';
+import { TempBookingRepository } from "../repository/TempBookingRepository";
+import { GroupBookingRepository } from "../repository/GroupBookingRepository";
+import { RoomRepository } from "../repository/RoomRepository";
 
 export class BookingService {
 
@@ -19,31 +23,26 @@ export class BookingService {
         // find tempBooking and update
         for (let i = 0; i < length; i++) {
             const booking = bookings[i];
-            const isBooked = await this.checkBooking(booking);
+            const isBooked = await BookRoomRepository.getBookingByRoomIdAndStartDate(booking.roomID, booking.startDate);
             if (isBooked) {
                 flag = false;
             }
             const statusBooking = isBooked ? BOOKING.BOOKED : BOOKING.SUCCESS;
-
-            await getConnection().createQueryBuilder()
-                .update(TempBookRoom)
-                .set({ status: statusBooking })
-                .where('id = :tempBookingId', { tempBookingId: tempBookingIds[i] })
-                .execute();
+            await TempBookingRepository.updateStatusTempBooking(tempBookingIds[i], statusBooking);
         }
 
         // add booking_room
         if (flag) {
-            const group = await getConnection().manager.findOne(GroupBooking, { id: itemQueue.groupId });
+            const group = await GroupBookingRepository.getGroupById(itemQueue.groupId);
             for (let i = 0; i < length; i++) {
-                const room = await getConnection().manager.findOne(Room, { id: bookings[i].roomID });
+                const room = await RoomRepository.getRoomById(bookings[i].roomID);
                 const bookRoom = new BookRoom();
                 bookRoom.startDate = MomentDateTime.getDateUtc(bookings[i].startDate);
                 bookRoom.endDate = MomentDateTime.getDateUtc(bookings[i].endDate);
                 bookRoom.group = group;
                 bookRoom.room = room;
 
-                await getConnection().manager.save(bookRoom);
+                await BookRoomRepository.insertBookingRoom(bookRoom);
             }
         }
     }
@@ -75,17 +74,5 @@ export class BookingService {
             }
         }
         return max;
-    }
-
-    public static checkBooking(BRModel: BookRoomModel) {
-        const startDate = MomentDateTime.getDateUtc(BRModel.startDate);    
-        const booking = getConnection().createQueryBuilder()
-        .select('br.id')
-        .from(BookRoom, 'br')
-        .where('br.startDate <= :startDate AND br.endDate >= :startDate AND br.roomId = :roomId')
-        .setParameters({ roomId: BRModel.roomID, startDate: startDate })
-        .getOne();
-    
-        return booking;
     }
 }
