@@ -7,6 +7,7 @@ import { BookRoom } from '../../entity/BookRoom';
 import { GroupBookingRepository } from '../../repository/GroupBookingRepository';
 import { RoomRepository } from '../../repository/RoomRepository';
 import { MomentDateTime } from '../../util/DateTimeUTC';
+import { BookingService } from '../../service/BookingService';
 
 
 xdescribe('Test BookRoomRepository', () => {
@@ -30,17 +31,17 @@ xdescribe('Test BookRoomRepository', () => {
     })
 
     it('get bookingRoom is not null', async () => {
-        const booking = await BookRoomRepository.getBookingByRoomIdAndStartDate(roomID, startDate);
+        const booking = await BookingService.getBookingByRoomIdAndStartDate(roomID, startDate);
         expect(booking).to.have.property('id');
     })
 
     it('get bookingRoom is null', async () => {
-        const booking = await BookRoomRepository.getBookingByRoomIdAndStartDate(roomID, 1);
+        const booking = await BookingService.getBookingByRoomIdAndStartDate(roomID, 1);
         should().not.exist(booking);
     })
 
     it('insert BookingRoom is successfully', async () => {
-        const result = await BookRoomRepository.insertBookingRoom(booking);    
+        const result = await BookingService.insertBookingRoom(booking);    
         expect(result).to.have.property('id');
     })
 })
