@@ -3,7 +3,7 @@
    "host": "localhost",
    "port": 3306,
    "username": "root",
-   "password": "DepTrai123",
+   "password": "",
    "database": "hotel",
    "synchronize": false,
    "logging": false,

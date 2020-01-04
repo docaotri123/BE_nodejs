@@ -28,16 +28,20 @@
     "routing-controllers": "^0.8.0",
     "ts-md5": "^1.2.7",
     "ts-node": "3.3.0",
+    "tsconfig-paths": "^3.9.0",
     "typeorm": "^0.2.21",
     "typescript": "3.3.3333"
   },
   "nodemonConfig": {
-    "ignore": ["src/**/*.spec.ts"]
+    "ignore": [
+      "src/**/*.spec.ts"
+    ]
   },
   "scripts": {
     "start": "ts-node src/app.ts",
     "watch": "nodemon --watch 'src/**/*.ts' --ignore 'src//test**/*.spec.ts' --exec nodemon src/app.ts",
     "test": "mocha -r ts-node/register src/test/**/*.spec.ts",
+    "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
     "lint": "tslint -p tsconfig.json"
   }
 }
