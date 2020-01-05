@@ -73,13 +73,6 @@ export class BookRoomService {
         return max;
     }
 
-    public static mapGroupEntity(resource: GroupBooking , des: BookRoomModel, user: User) {
-        resource.startDate = MomentDateTime.getDateUtc(des.startDate);
-        resource.endDate = MomentDateTime.getDateUtc(des.endDate);
-        resource.user = user;
-        return resource;
-    }
-
     public static getBookingById(bookingId: number) {
         return getConnection().manager.findOne(BookRoom, {id: bookingId});
     }

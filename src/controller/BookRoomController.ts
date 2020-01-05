@@ -90,7 +90,7 @@ export class BookRoomController {
             const room = await RoomService.getRoomById(booking.roomID);
 
             const group = new GroupBooking();
-            BookRoomService.mapGroupEntity(group, booking, user);
+            GroupBookingService.mapGroupEntity(group, booking, user);
             const groupResult = await transaction.manager.save(group);
 
             const tempBooking = new TempBookRoom();

@@ -5,9 +5,11 @@ import { arrDate, arrOne, arrTwo, arrThree, itemQueue } from '../../mock/MockCon
 import { createConnection } from 'typeorm';
 import { sqlConfig } from '../../app.config';
 import { BookRoomService } from '../../service/BookRoomService'
+import { GroupBooking } from '../../entity/GroupBooking';
+import { GroupBookingService } from '../../service/GroupBookingService';
 
-describe('Test BookRoomSe', () => {
-    let mock, arr1, arr2, arr3;
+describe.only('BookingService', () => {
+    let mock, arr1, arr2, arr3, bookingId = 1;
     beforeEach(() => {
         mock = arrDate;
         arr1 = arrOne;
@@ -54,6 +56,40 @@ describe('Test BookRoomSe', () => {
         afterEach(()=> {
             database.close();
         })
+    })
+
+    describe('check getBookingById is not null', async () => {
+        const booking = await BookRoomService.getBookingById(bookingId);
+        expect(booking.id).to.equal(1);
+    })
+
+    describe('check getBookingById is null', async () => {
+        const booking = await BookRoomService.getBookingById(0);
+        should().not.exist(booking);
+    })
+
+    describe('check getBookingByRoomIdAndStartDate is not null', () => {
+
+    })
+
+    describe('check getBookingByRoomIdAndStartDate is null', () => {
+        
+    })
+
+    describe('check getBookingByTimes is not null', () => {
+
+    })
+
+    describe('check getBookingByTimes is null', () => {
+        
+    })
+
+    describe('check getBookingByDays is not null', () => {
+
+    })
+
+    describe('check getBookingByDays is null', () => {
+        
     })
 
 
