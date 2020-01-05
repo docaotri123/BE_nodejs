@@ -68,20 +68,24 @@ describe.only('BookingService', () => {
         should().not.exist(booking);
     })
 
-    describe('check getBookingByRoomIdAndStartDate is not null', () => {
-
+    describe('check getBookingByRoomIdAndStartDate is not null', async () => {
+        const isBooked = await BookRoomService.getBookingByRoomIdAndStartDate(1, 123);
+        should().exist(isBooked);
     })
 
-    describe('check getBookingByRoomIdAndStartDate is null', () => {
-        
+    describe('check getBookingByRoomIdAndStartDate is null', async () => {
+        const isBooked = await BookRoomService.getBookingByRoomIdAndStartDate(1, 123);
+        should().not.exist(isBooked);
     })
 
-    describe('check getBookingByTimes is not null', () => {
-
+    describe('check getBookingByTimes is not null', async () => {
+        const data =  await BookRoomService.getBookingByTimes(new Date(), new Date());
+        should().exist(data);
     })
 
-    describe('check getBookingByTimes is null', () => {
-        
+    describe('check getBookingByTimes is null', async () => {
+        const data =  await BookRoomService.getBookingByTimes(new Date(), new Date());
+        should().not.exist(data);
     })
 
     describe('check getBookingByDays is not null', () => {
