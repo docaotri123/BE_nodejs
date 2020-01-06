@@ -13,34 +13,41 @@ import { User } from "../entity/User";
 export class BookRoomService {
 
     public static async handleBookingRoom(itemQueue: BookingQueueModel) {
-        const bookings = itemQueue.dataAPI;
-        const tempBookingIds = itemQueue.tempBookingIds;
-        const length = bookings.length;
-        let flag = true;
-        // find tempBooking and update
-        for (let i = 0; i < length; i++) {
-            const booking = bookings[i];
-            const isBooked = await this.getBookingByRoomIdAndStartDate(booking.roomID, booking.startDate);
-            if (isBooked) {
-                flag = false;
-            }
-            const statusBooking = isBooked ? BOOKING.BOOKED : BOOKING.SUCCESS;
-            await TempBookingService.updateStatusTempBooking(tempBookingIds[i], statusBooking);
-        }
-
-        // add booking_room
-        if (flag) {
-            const group = await GroupBookingService.getGroupById(itemQueue.groupId);
+        try {
+            const bookings = itemQueue.dataAPI;
+            const tempBookingIds = itemQueue.tempBookingIds;
+            const length = bookings.length;
+            let flag = true;
+            // find tempBooking and update
             for (let i = 0; i < length; i++) {
-                const room = await RoomService.getRoomById(bookings[i].roomID);
-                const bookRoom = new BookRoom();
-                bookRoom.startDate = MomentDateTime.getDateUtc(bookings[i].startDate);
-                bookRoom.endDate = MomentDateTime.getDateUtc(bookings[i].endDate);
-                bookRoom.group = group;
-                bookRoom.room = room;
-
-                await this.insertBookingRoom(bookRoom);
+                const booking = bookings[i];
+                const isBooked = await BookRoomService.getBookingByRoomIdAndStartDate(booking.roomID, booking.startDate);
+                if (isBooked) {
+                    flag = false;
+                }
+                const statusBooking = isBooked ? BOOKING.BOOKED : BOOKING.SUCCESS;
+                await TempBookingService.updateStatusTempBooking(tempBookingIds[i], statusBooking);
             }
+
+            // add booking_room
+            if (flag) {
+                const group = await GroupBookingService.getGroupById(itemQueue.groupId);
+                for (let i = 0; i < length; i++) {
+                    const room = await RoomService.getRoomById(bookings[i].roomID);
+                    const bookRoom = new BookRoom();
+                    bookRoom.startDate = MomentDateTime.getDateUtc(bookings[i].startDate);
+                    bookRoom.endDate = MomentDateTime.getDateUtc(bookings[i].endDate);
+                    bookRoom.group = group;
+                    bookRoom.room = room;
+
+                    await BookRoomService.insertBookingRoom(bookRoom);
+                }
+            }
+            return true;
+        } catch (err) {
+            console.log('handle booking error');
+            console.log(err);
+            return false;
         }
     }
 
@@ -73,19 +80,27 @@ export class BookRoomService {
         return max;
     }
 
+    public static getRandomBooking() {
+        return getConnection().createQueryBuilder()
+            .select('br.id')
+            .from(BookRoom, 'br')
+            .where('isCancelled = :isCancelled', {isCancelled: false})
+            .getOne();
+    }
+
     public static getBookingById(bookingId: number) {
-        return getConnection().manager.findOne(BookRoom, {id: bookingId});
+        return getConnection().manager.findOne(BookRoom, {id: bookingId, isCancelled: false});
     }
 
     public static getBookingByRoomIdAndStartDate(roomID: number, startDate: number) {
-        const _startDate = MomentDateTime.getDateUtc(startDate);    
+        const _startDate = MomentDateTime.getDateUtc(startDate);
         return getConnection()
-        .createQueryBuilder()
-        .select('br.id')
-        .from(BookRoom, 'br')
-        .where('br.startDate <= :startDate AND br.endDate >= :startDate AND br.roomId = :roomId')
-        .setParameters({ roomId: roomID, startDate: _startDate })
-        .getOne();
+            .createQueryBuilder()
+            .select('br.id')
+            .from(BookRoom, 'br')
+            .where('br.startDate <= :startDate AND br.endDate >= :startDate AND br.roomId = :roomId')
+            .setParameters({ roomId: roomID, startDate: _startDate })
+            .getOne();
     }
 
     public static getBookingByTimes(startDate: Date, endDate: Date) {

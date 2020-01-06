@@ -11,7 +11,9 @@
     "gulp-util": "^3.0.8",
     "mocha": "^6.2.2",
     "nodemon": "^1.19.4",
-    "sinon": "^8.0.1"
+    "nyc": "^15.0.0",
+    "sinon": "^8.0.1",
+    "source-map-support": "^0.5.16"
   },
   "dependencies": {
     "@types/node": "^8.10.59",
@@ -37,10 +39,24 @@
       "src/**/*.spec.ts"
     ]
   },
+  "nyc": {
+    "extension": [
+      ".ts",
+      ".tsx"
+    ],
+    "exclude": [
+      "**/*.d.ts"
+    ],
+    "reporter": [
+      "html"
+    ],
+    "all": true  
+  },
   "scripts": {
     "start": "ts-node src/app.ts",
-    "watch": "nodemon --watch 'src/**/*.ts' --ignore 'src//test**/*.spec.ts' --exec nodemon src/app.ts",
-    "test": "mocha -r ts-node/register src/test/**/*.spec.ts",
+    "watch": "nodemon --watch 'src/**/*.ts' --ignore 'src/test**/*.spec.ts' --exec nodemon src/app.ts",
+    "test": "mocha -r ts-node/register --colors src/test/**/*.spec.ts",
+    "coverage": "nyc npm run test",
     "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
     "lint": "tslint -p tsconfig.json"
   }

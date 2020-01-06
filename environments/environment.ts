@@ -1,9 +1,9 @@
 export const ENVIRONMENT = process.env.ENVIRONMENT || 'LOCAL';
 
 const LOCAL_SQL_USER = 'root';
-const LOCAL_SQL_HOST = '127.0.0.1';
+const LOCAL_SQL_HOST = 'localhost';
 const LOCAL_SQL_PORT = 3306;
-const LOCAL_SQL_PASSWORD = '';
+const LOCAL_SQL_PASSWORD = '123456';
 const LOCAL_DATABASE_NAME = 'hotel';
 const LOCAL_INSTANCE_CONNECTION_NAME = '';
 
