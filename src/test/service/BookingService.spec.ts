@@ -10,6 +10,16 @@ import { GroupBookingService } from '../../service/GroupBookingService';
 
 describe.only('BookingService', () => {
     let mock, arr1, arr2, arr3, bookingId = 1;
+    let database = null;
+
+    before(async()=> {
+        database = await createConnection(sqlConfig);
+    })
+
+    after(async()=> {
+        await database.close();
+    })
+
     beforeEach(() => {
         mock = arrDate;
         arr1 = arrOne;
@@ -46,22 +56,11 @@ describe.only('BookingService', () => {
         })
     })
 
-    // describe('check handle booking', () => {
-    //     let database = null;
+    describe('check getBookingById',() => {
 
-    //     beforeEach(async () => {
-    //         database = await createConnection(sqlConfig);
-    //     });
-
-    //     afterEach(()=> {
-    //         database.close();
-    //     })
-    // })
-
-    describe('check getBookingById is not null',() => {
-        it('abc', async () => {
-            const booking =  await BookRoomService.getBookingById(bookingId);
-            expect(booking.id).to.equal(1);
+        it('etBookingById is null', async () => {
+            const booking =  await BookRoomService.getBookingById(-1);
+            should().not.exist(booking);
         })
     })
 

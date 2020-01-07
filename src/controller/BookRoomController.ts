@@ -17,6 +17,7 @@ import { RoomService } from '../service/RoomService';
 import { UserService } from '../service/UserService';
 import { TempBookingService } from '../service/TempBookingService';
 import { GroupBookingService } from '../service/GroupBookingService';
+import { HandleObj } from '../model/HandleModel';
 
 @JsonController()
 export class BookRoomController {
@@ -25,121 +26,73 @@ export class BookRoomController {
     async getStatusBookingRoom(
         @checkPermission([ROLE.ADMIN, ROLE.CUSTOMER]) permission,
         @Body() user: any) {
-        try {
-            if (!permission.allow && !permission.user) {
-                return new ResponseObj(400, 'Token expired');
-            }
-    
-            if (!permission.allow && permission.user) {
-                return new ResponseObj(401, 'Not authorizer');
-            }
-
-            const groups = await GroupBookingService.getGroupBookingByUser(user.userId);
-            const length = groups.length;
-            const results = [];
-
-            for (let i = 0; i < length; i++) {
-                const group = groups[i];
-                const temps = await TempBookingService.getStatusTempBookingByGroup(group);
-                results.push(temps);
-            }
-
-            return new ResponseObj(200, 'status booking rooms', results);
-
-        } catch(err) {
-            console.log(err);
-            return new ResponseObj(500, err);
+        if (!permission.allow && !permission.user) {
+            return new ResponseObj(400, 'Token expired');
         }
+
+        if (!permission.allow && permission.user) {
+            return new ResponseObj(401, 'Not authorizer');
+        }
+
+        const handle: any = await BookRoomService.statusBookings(user.userId);
+        if (handle.status) {
+            return new ResponseObj(500, handle.err);
+        }
+        return new ResponseObj(200, 'status booking rooms', handle.data);
     }
 
     @Post('/availableroomsday')
     async getAvailableRoom(@Body() body: any) {
-        try {
-            const startDay = MomentDateTime.startSpecificDayUtc(body.time);
-
-            const rooms = await RoomService.getRooms();
-            const booksByDay = await BookRoomService.getBookingByDays(startDay);
-            const results = RoomService.getRoomsNotBooking(rooms, booksByDay);
-
-            return new ResponseObj(200, 'okie', results);
-        } catch (err) {
-            console.log(err);
-            return new ResponseObj(500, err);
+        const handle: any = BookRoomService.availableRoomsByDay(body.time);
+        if (!handle.status) {
+            return new ResponseObj(500, handle.err); 
         }
+        return new ResponseObj(200, handle.data);
     }
 
     @Post('/bookingroom')
     async bookRoom(
         @checkPermission([ROLE.ADMIN, ROLE.CUSTOMER]) permission,
         @Body() BookingsBody: BookRoomModel) {
-        const connection = getConnection();
-        const transaction = connection.createQueryRunner();
-        await transaction.connect();
-        await transaction.startTransaction();
-        try {
-                        
-            if (!permission.allow && !permission.user) {
-                return new ResponseObj(400, 'Token expired');
-            }
-    
-            if (!permission.allow && permission.user) {
-                return new ResponseObj(401, 'Not authorizer');
-            }
-            const booking = BookingsBody;
-            const user = await UserService.getUserById(booking.userId);
-            const room = await RoomService.getRoomById(booking.roomID);
-
-            const group = new GroupBooking();
-            GroupBookingService.mapGroupEntity(group, booking, user);
-            const groupResult = await transaction.manager.save(group);
-
-            const tempBooking = new TempBookRoom();
-            TempBookingService.mapTempBookingEntity(tempBooking, booking, groupResult, room);
-            const tempBookingResult = await transaction.manager.save(tempBooking);
-
-            const itemQueue = new BookingQueueModel();
-            itemQueue.dataAPI = [BookingsBody];
-            itemQueue.groupId = groupResult.id;
-            itemQueue.tempBookingIds = [tempBookingResult.id];
-
-            await startPublisher(itemQueue);
-            await transaction.commitTransaction();
-            await transaction.release();
-            return new ResponseObj(200, 'Booing Room is pending');
-           
-        } catch (err) {
-            console.log(err);
-            await transaction.rollbackTransaction();
-            return new ResponseObj(500, err);
+        if (!permission.allow && !permission.user) {
+            return new ResponseObj(400, 'Token expired');
         }
+
+        if (!permission.allow && permission.user) {
+            return new ResponseObj(401, 'Not authorizer');
+        }
+        const handle: any = await BookRoomService.bookingRoom(BookingsBody);
+        if (!handle.status) {
+            return new ResponseObj(500, handle.err);
+        }
+        return new ResponseObj(200, 'Booing Room is pending');
     }
 
     @Put('/cancelroom/:id')
     async cancelRoom(
-        @Param('id') idBooking: number,
+        @Param('id') bookingId: number,
         @checkPermission([ROLE.ADMIN, ROLE.CUSTOMER]) permission) {
-        try {
-            if (!permission.allow && !permission.user) {
-                return new ResponseObj(400, 'Token expired');
-            }
-    
-            if (!permission.allow && permission.user) {
-                return new ResponseObj(401, 'Not authorizer');
-            }
-            const room = await BookRoomService.getBookingById(idBooking);
-            const today = MomentDateTime.getCurrentDate();
-
-            if (today >= room.startDate) {
-                return new ResponseObj(402, 'startDate greater today ! can not cancel room');
-            }
-
-            await BookRoomService.deleteBooking(idBooking);
-            
-            return new ResponseObj(200, 'Cancel room successfully');
-        } catch (err) {
-            console.log(err);
-            return new ResponseObj(500, err);
+        if (!permission.allow && !permission.user) {
+            return new ResponseObj(400, 'Token expired');
         }
+
+        if (!permission.allow && permission.user) {
+            return new ResponseObj(401, 'Not authorizer');
+        }
+
+        const checkTime = await BookRoomService.checkStartGreaterToday(bookingId)
+
+        if (checkTime) {
+            return new ResponseObj(402, 'startDate greater today ! can not cancel room');
+        }
+
+        const handle: any = BookRoomService.cancelRoomById(bookingId);
+
+        if (!handle.status) {
+            return new ResponseObj(500, handle.err);
+        }
+
+        return new ResponseObj(200, 'Cancel room successfully');
     }
 
     @Put('/editbooking/:id')
@@ -163,18 +116,12 @@ export class BookRoomController {
 
     @Post('/availableroomstime')
     async getAvailableRoomTime(@Body() body: any) {
-        try {
-            const startTime = MomentDateTime.getDateUtc(body.startTime);
-            const endTime = MomentDateTime.getDateUtc(body.endTime);
-            const rooms = await RoomService.getRooms();
-            const booksByTime = await BookRoomService.getBookingByTimes(startTime, endTime);
-            const results = RoomService.getRoomsNotBooking(rooms, booksByTime);
-
-            return new ResponseObj(200, 'available rooms in time', results);
-        } catch (err) {
-            console.log(err);
-            return new ResponseObj(500, err);
+        const handle: any = await BookRoomService.availableRoomsByTime(body);
+        if (!handle.status) {
+            return new ResponseObj(500, handle.err);
         }
+
+        return new ResponseObj(200, 'available rooms in time', handle.data);
     }
 
     @Post('/bookingrooms')

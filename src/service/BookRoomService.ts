@@ -9,8 +9,106 @@ import { RoomService } from "./RoomService";
 import { BookRoomModel } from "../model/BookRoomModel";
 import { GroupBooking } from "../entity/GroupBooking";
 import { User } from "../entity/User";
+import { UserService } from "./UserService";
+import { TempBookRoom } from "../entity/TempBookRoom";
+import { startPublisher } from "../job_queue/publisher";
+import { HandleObj } from "../model/HandleModel";
 
 export class BookRoomService {
+
+    public static async bookingRoom(booking) {
+        const connection = getConnection();
+        const transaction = connection.createQueryRunner();
+        try {
+            const user = await UserService.getUserById(booking.userId);
+            const room = await RoomService.getRoomById(booking.roomID);
+            
+           
+            await transaction.connect();
+            await transaction.startTransaction();
+            const group = new GroupBooking();
+            GroupBookingService.mapGroupEntity(group, booking, user);
+            const groupResult = await transaction.manager.save(group);
+
+            const tempBooking = new TempBookRoom();
+            TempBookingService.mapTempBookingEntity(tempBooking, booking, groupResult, room);
+            const tempBookingResult = await transaction.manager.save(tempBooking);
+            await transaction.commitTransaction();
+            await transaction.release();
+
+            const itemQueue = new BookingQueueModel();
+            itemQueue.dataAPI = [booking];
+            itemQueue.groupId = groupResult.id;
+            itemQueue.tempBookingIds = [tempBookingResult.id];
+
+            await startPublisher(itemQueue);
+            return new HandleObj(true);
+        } catch (err) {
+            console.log(err);
+            await transaction.rollbackTransaction();
+            return new HandleObj(false, err);
+        }
+    }
+
+    public static async statusBookings(userId: string) {
+        try {
+            const groups = await GroupBookingService.getGroupBookingByUser(userId);
+            const length = groups.length;
+            const results = [];
+
+            for (let i = 0; i < length; i++) {
+                const group = groups[i];
+                const temps = await TempBookingService.getStatusTempBookingByGroup(group);
+                results.push(temps);
+            }
+            return new HandleObj(true,null,results);
+        } catch(err) {
+            console.log(err);
+            return new HandleObj(true,err);
+        }
+    }
+
+    public static async availableRoomsByDay(timestamp: number) {
+        try {
+            const startDay = MomentDateTime.startSpecificDayUtc(timestamp);
+            const rooms = await RoomService.getRooms();
+            const booksByDay = await BookRoomService.getBookingByDays(startDay);
+            const results = RoomService.getRoomsNotBooking(rooms, booksByDay);
+            return new HandleObj(true, null, results);
+        } catch(err) {
+            console.log(err);
+            return new HandleObj(false, err);
+        }
+    }
+
+    public static async availableRoomsByTime(body) {
+        try {
+            const startTime = MomentDateTime.getDateUtc(body.startTime);
+            const endTime = MomentDateTime.getDateUtc(body.endTime);
+            const rooms = await RoomService.getRooms();
+            const booksByTime = await BookRoomService.getBookingByTimes(startTime, endTime);
+            const results = RoomService.getRoomsNotBooking(rooms, booksByTime);
+            return new HandleObj(true, null, results);
+        } catch(err) {
+            console.log(err);
+            return new HandleObj(false, err);
+        }
+    }
+
+    public static async cancelRoomById(bookingId: number) {
+        try {
+            await getConnection()
+                .createQueryBuilder()
+                .update(BookRoom)
+                .set({ isCancelled: true })
+                .where('id = :id', { id: bookingId })
+                .execute();
+            return new HandleObj(true);
+        } catch (err) {
+            console.log(err);
+            return new HandleObj(false, err);
+        }
+    }
 
     public static async handleBookingRoom(itemQueue: BookingQueueModel) {
         try {
@@ -47,6 +145,16 @@ export class BookRoomService {
         } catch (err) {
             console.log('handle booking error');
             console.log(err);
+            return false;
+        }
+    }
+
+    public static async checkStartGreaterToday(bookingId: number) {
+        try {
+            const room = await BookRoomService.getBookingById(bookingId);
+            const today = MomentDateTime.getCurrentDate();
+            return today >= room.startDate
+        } catch(err) {
             return false;
         }
     }
@@ -129,15 +237,6 @@ export class BookRoomService {
 
     public static insertBookingRoom(booking: BookRoom) {
         return getConnection().manager.save(booking);
-    }
-
-    public static deleteBooking(bookingId: number) {
-        return getConnection()
-            .createQueryBuilder()
-            .update(BookRoom)
-            .set({ isCancelled: true })
-            .where('id = :id', { id: bookingId })
-            .execute();
     }
 
 }
