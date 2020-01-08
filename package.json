@@ -55,7 +55,7 @@
   "scripts": {
     "start": "ts-node src/app.ts",
     "watch": "nodemon --watch 'src/**/*.ts' --ignore 'src/test**/*.spec.ts' --exec nodemon src/app.ts",
-    "test": "mocha -r ts-node/register --colors src/test/**/*.spec.ts",
+    "test": "mocha -r ts-node/register --colors src/test/**/*.spec.ts --exit",
     "coverage": "nyc npm run test",
     "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
     "lint": "tslint -p tsconfig.json"

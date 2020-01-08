@@ -3,56 +3,31 @@ import 'mocha';
 import { arrDate, arrOne, arrTwo, arrThree, itemQueue } from '../../mock/MockConstant';
 
 import { createConnection } from 'typeorm';
-import { sqlConfig } from '../../app.config';
+import { sqlConfig_test } from '../../app.config';
 import { BookRoomService } from '../../service/BookRoomService'
 import { GroupBooking } from '../../entity/GroupBooking';
 import { GroupBookingService } from '../../service/GroupBookingService';
 
 describe.only('BookingService', () => {
-    let mock, arr1, arr2, arr3, bookingId = 1;
     let database = null;
 
-    before(async()=> {
-        database = await createConnection(sqlConfig);
+    before(async () => {
+        if (!database) {
+            database = await createConnection(sqlConfig_test);
+        }
     })
 
-    after(async()=> {
-        await database.close();
-    })
+    describe('check getRandomBooking',() => {
 
-    beforeEach(() => {
-        mock = arrDate;
-        arr1 = arrOne;
-        arr2 = arrTwo;
-        arr3 = arrThree;
-    })
-    describe('Check min max Date', () => {
-        it('get item have min date', () => {
-            const min = BookRoomService.minStartDate(mock);
-            expect(min.startDate).to.equal(1);
-        })
-    
-        it('get item have max date', () => {
-            const max = BookRoomService.maxEndDate(mock);
-            expect(max.endDate).to.equal(5);
-        })
-    })
-
-    describe('check exists in 2 array', () => {
-        it('check every index array 2 exists in array 1', () => {
-            const arr = BookRoomService.mapExistsInTwoArray(arr1, arr3);
-            for (let i = 0; i < arr.length; i++) {
-                expect(arr[i]).to.have.property('isExists');
-                expect(arr[i].isExists).to.equal(true);   
+        it('getRandomBooking', async () => {
+            const booking =  await BookRoomService.getRandomBooking();
+            
+            if (booking) {
+                should().exist(booking);
             }
-        })
-    
-        it('check index = 1 in array 2 not exists in array 1', () => {
-            const arr = BookRoomService.mapExistsInTwoArray(arr1, arr2);
-            for (let i = 0; i < arr.length; i++) {
-                expect(arr[i]).to.have.property('isExists');
+            else {
+                should().not.exist(booking);
             }
-            expect(arr[1].isExists).to.equal(false);   
         })
     })
 

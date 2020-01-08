@@ -27,6 +27,25 @@ export const sqlConfig: ConnectionOptions  = {
     }
 }
 
+export const sqlConfig_test: ConnectionOptions  = {
+   type: "mysql",
+   host: SQL_HOST,
+   port: SQL_PORT,
+   username: SQL_USER,
+   password: SQL_PASSWORD,
+   database: "test",
+   entities: [
+      "src/entity/**/*.ts"
+   ],
+   migrations: [
+      "src/migration/**/*.ts"
+   ],
+   cli: {
+      entitiesDir: "src/entity",
+      migrationsDir: "src/migration"
+   }
+}
+
 export const appConfig = {
    defaultErrorHandler: false,
    cors: true,

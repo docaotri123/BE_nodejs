@@ -25,7 +25,7 @@ export class BookRoomController {
     @Post('/statusbookingrooms')
     async getStatusBookingRoom(
         @checkPermission([ROLE.ADMIN, ROLE.CUSTOMER]) permission,
-        @Body() user: any) {
+        @Body() body: any) {
         if (!permission.allow && !permission.user) {
             return new ResponseObj(400, 'Token expired');
         }
@@ -34,8 +34,15 @@ export class BookRoomController {
             return new ResponseObj(401, 'Not authorizer');
         }
 
-        const handle: any = await BookRoomService.statusBookings(user.userId);
-        if (handle.status) {
+        const user = await UserService.getUserById(body.userId);
+
+        if(!user) {
+            return new ResponseObj(402, 'User not found');
+        }
+
+        const handle: any = await BookRoomService.statusBookings(body.userId);
+
+        if (!handle.status) {
             return new ResponseObj(500, handle.err);
         }
         return new ResponseObj(200, 'status booking rooms', handle.data);
@@ -61,7 +68,8 @@ export class BookRoomController {
         if (!permission.allow && permission.user) {
             return new ResponseObj(401, 'Not authorizer');
         }
-        const handle: any = await BookRoomService.bookingRoom(BookingsBody);
+        const handle: any = await BookRoomService.bookingRooms([BookingsBody]);
+
         if (!handle.status) {
             return new ResponseObj(500, handle.err);
         }
@@ -127,55 +135,21 @@ export class BookRoomController {
     @Post('/bookingrooms')
     async bookingRooms(
         @checkPermission([ROLE.ADMIN, ROLE.CUSTOMER]) permission,
-        @Body() roomsBody: any[]) {
-        const connection = getConnection();
-        const transaction = connection.createQueryRunner();
-        await transaction.connect();
-        await transaction.startTransaction();
-        try {
-            if (!permission.allow && !permission.user) {
-                return new ResponseObj(400, 'Token expired');
-            }
-
-            if (!permission.allow && permission.user) {
-                return new ResponseObj(401, 'Not authorizer');
-            }
-            // create group
-            const user = await UserService.getUserById(roomsBody[0].userId);
-            const min = BookRoomService.minStartDate(roomsBody).startDate;
-            const max = BookRoomService.maxEndDate(roomsBody).endDate;
-            const group = new GroupBooking();
-            group.user = user;
-            group.startDate = MomentDateTime.getDateUtc(min);
-            group.endDate = MomentDateTime.getDateUtc(max);
-            const groupResult = await transaction.manager.save(group);
-
-            // create tempBooking and push queue
-            const length = roomsBody.length;
-            const temps = [];
-            for (let i = 0; i < length; i++) {
-                const booking = roomsBody[i];
-                const room = await RoomService.getRoomById(booking.roomID);
-                const tempBooking = new TempBookRoom();
-                TempBookingService.mapTempBookingEntity(tempBooking, booking, groupResult, room);
-                const tempResult = await transaction.manager.save(tempBooking);
-                temps.push(tempResult.id);
-            }
-
-            const itemQueue = new BookingQueueModel();
-            itemQueue.dataAPI = roomsBody;
-            itemQueue.groupId = groupResult.id;
-            itemQueue.tempBookingIds = temps;
-
-            await startPublisher(itemQueue);
-            await transaction.commitTransaction();
-            await transaction.release();
-
-            return new ResponseObj(201, 'Booking rooms is pending');
-        } catch (err) {
-            console.log(err);
-            await transaction.rollbackTransaction();
-            return new ResponseObj(500, err);
+        @Body() roomsBody: BookRoomModel[]) {
+        if (!permission.allow && !permission.user) {
+            return new ResponseObj(400, 'Token expired');
         }
+
+        if (!permission.allow && permission.user) {
+            return new ResponseObj(401, 'Not authorizer');
+        }
+
+        const handle: any = await BookRoomService.bookingRooms(roomsBody);
+
+        if (!handle.status) {
+            return new ResponseObj(500, handle.err);
+        }
+
+        return new ResponseObj(201, 'Booking rooms is pending');
     }
 }

@@ -13,35 +13,44 @@ import { UserService } from "./UserService";
 import { TempBookRoom } from "../entity/TempBookRoom";
 import { startPublisher } from "../job_queue/publisher";
 import { HandleObj } from "../model/HandleModel";
+import Common from "../util/Common";
 
 export class BookRoomService {
 
-    public static async bookingRoom(booking) {
+    public static async bookingRooms(bookings: BookRoomModel[]) {
         const connection = getConnection();
         const transaction = connection.createQueryRunner();
         try {
-            const user = await UserService.getUserById(booking.userId);
-            const room = await RoomService.getRoomById(booking.roomID);
-            
-           
-            await transaction.connect();
-            await transaction.startTransaction();
-            const group = new GroupBooking();
-            GroupBookingService.mapGroupEntity(group, booking, user);
-            const groupResult = await transaction.manager.save(group);
+             // create group
+             const user = await UserService.getUserById(bookings[0].userId);
+             const min = Common.minStartDate(bookings).startDate;
+             const max = Common.maxEndDate(bookings).endDate;
 
-            const tempBooking = new TempBookRoom();
-            TempBookingService.mapTempBookingEntity(tempBooking, booking, groupResult, room);
-            const tempBookingResult = await transaction.manager.save(tempBooking);
-            await transaction.commitTransaction();
-            await transaction.release();
+             const group = new GroupBooking();
+             group.user = user;
+             group.startDate = MomentDateTime.getDateUtc(min);
+             group.endDate = MomentDateTime.getDateUtc(max);
+             await transaction.startTransaction();
+             const groupResult = await transaction.manager.save(group);
+ 
+             // create tempBooking and push queue
+             const length = bookings.length;
+             const temps = [];
+             for (let i = 0; i < length; i++) {
+                 const booking = bookings[i];
+                 const room = await RoomService.getRoomById(booking.roomID);
+                 const tempBooking = new TempBookRoom();
+                 TempBookingService.mapTempBookingEntity(tempBooking, booking, groupResult, room);
+                 const tempResult = await transaction.manager.save(tempBooking);
+                 temps.push(tempResult.id);
+             }
 
-            const itemQueue = new BookingQueueModel();
-            itemQueue.dataAPI = [booking];
-            itemQueue.groupId = groupResult.id;
-            itemQueue.tempBookingIds = [tempBookingResult.id];
+             await transaction.commitTransaction();
+             await transaction.release();
 
-            await startPublisher(itemQueue);
+             const itemQueue = new BookingQueueModel(bookings, groupResult.id, temps);
+             await startPublisher(itemQueue);
+
             return new HandleObj(true);
         } catch (err) {
             console.log(err);
@@ -61,10 +70,11 @@ export class BookRoomService {
                 const temps = await TempBookingService.getStatusTempBookingByGroup(group);
                 results.push(temps);
             }
+            
             return new HandleObj(true,null,results);
         } catch(err) {
             console.log(err);
-            return new HandleObj(true,err);
+            return new HandleObj(false,err);
         }
     }
 
@@ -110,7 +120,7 @@ export class BookRoomService {
         }
     }
 
-    public static async handleBookingRoom(itemQueue: BookingQueueModel) {
+    public static async handleBookingRooms(itemQueue: BookingQueueModel) {
         try {
             const bookings = itemQueue.dataAPI;
             const tempBookingIds = itemQueue.tempBookingIds;
@@ -119,7 +129,7 @@ export class BookRoomService {
             // find tempBooking and update
             for (let i = 0; i < length; i++) {
                 const booking = bookings[i];
-                const isBooked = await BookRoomService.getBookingByRoomIdAndStartDate(booking.roomID, booking.startDate);
+                const isBooked = await BookRoomService.getBookingByRoomIdAndStartDate(booking.roomID, booking.startDate);                
                 if (isBooked) {
                     flag = false;
                 }
@@ -159,35 +169,6 @@ export class BookRoomService {
         }
     }
 
-    public static mapExistsInTwoArray(source: any[], destination: any[]) {
-        return source.map((value, index) => {
-            const isExists = destination[index] ? true : false;
-            return { ...value, isExists: isExists };
-        });
-    }
-
-    public static minStartDate(arr: any[]) {
-        let min = arr[0];
-        for (let i = 1; i < arr.length; i++) {
-            const obj = arr[i];
-            if (obj.startDate < min.startDate) {
-                min = obj;
-            }
-        }
-        return min;
-    }
-
-    public static maxEndDate(arr: any[]) {
-        let max = arr[0];
-        for (let i = 1; i < arr.length; i++) {
-            const obj = arr[i];
-            if (obj.endDate > max.endDate) {
-                max = obj;
-            }
-        }
-        return max;
-    }
-
     public static getRandomBooking() {
         return getConnection().createQueryBuilder()
             .select('br.id')
@@ -206,7 +187,7 @@ export class BookRoomService {
             .createQueryBuilder()
             .select('br.id')
             .from(BookRoom, 'br')
-            .where('br.startDate <= :startDate AND br.endDate >= :startDate AND br.roomId = :roomId')
+            .where('br.roomId = :roomId AND br.startDate <= :startDate AND br.endDate >= :startDate')
             .setParameters({ roomId: roomID, startDate: _startDate })
             .getOne();
     }

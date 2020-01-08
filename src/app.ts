@@ -9,12 +9,13 @@ console.log('connect SQL');
 createConnection(sqlConfig)
     .then((connection) => {
         connection.runMigrations();
-        listenToBookingQueue(BookRoomService.handleBookingRoom);
+        listenToBookingQueue(BookRoomService.handleBookingRooms);
     })
     .catch(err => {
         console.log('Error while connecting to the database', err);
         return err;
     })
+
 const app = createExpressServer(appConfig);
 
 app.listen(SERVER_PORT, () => console.log(`Server is running port ${SERVER_PORT}`));

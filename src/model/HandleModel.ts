@@ -6,6 +6,6 @@ export class HandleObj {
     constructor(status: boolean, err?: any, data?: any) {
         this.status = status;
         this.err = err;
-        this.data;
+        this.data = data;
     }
 }
