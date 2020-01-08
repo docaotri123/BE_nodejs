@@ -9,54 +9,38 @@ import { Role } from '../entity/Role';
 import { LoginModel } from '../model/LoginModel';
 import * as jwt from 'jsonwebtoken';
 import { SECRET } from '../app.config';
+import { UserService } from '../service/UserService';
 
 @JsonController()
 export class UserController {
 
     @Post('/user')
-    async RegisterAccount(@Body() userBody: UserModel) {
-        try {
-            // check unique user
-            const email = await getConnection().manager.findOne(User, { email: userBody.Email });
-            if (email) {
-                return new ResponseObj(400, 'Email has exists');
-            }
-            // save user with role (customer)
-            const user = new User();
-            user.email = userBody.Email;
-            user.phone = userBody.Phone;
-            user.password = Md5.hashStr(userBody.Password + HASH_STR);
-            user.role = await getConnection().manager.findOne(Role, {role: ROLE.CUSTOMER});
+    async RegisterAccount(@Body() userBody: UserModel) {   
 
-            await getConnection().manager.save(user);
+        const handle = await UserService.registerUser(userBody);
+        const {code, mess} = handle;
 
-            return new ResponseObj(201, 'Created User');
-        } catch (err) {
-            console.log(err);
-            return new ResponseObj(500, err);
+        if (!handle.status) {
+            return new ResponseObj(code, mess);
         }
+
+        return new ResponseObj(code, mess);
     }
 
     @Post('/login')
     async Login(@Body() loginModel: LoginModel) {
         try {
-            const password = Md5.hashStr(loginModel.Password + HASH_STR);
-            const user = await getConnection()
-            .createQueryBuilder()
-            .select('u.id')
-            .addSelect('u.email')
-            .from(User, 'u')
-            .leftJoinAndMapOne('u.role', 'role', 'r', 'u.role = r.id')
-            .where('u.email = :email AND u.password = :password',
-                {email: loginModel.Username, password: password})
-            .getOne();
-            
-            if (!user) {
-                return new ResponseObj(400, 'username or password incorrect' );
+
+            const username = loginModel.username;
+            const password = Md5.hashStr(loginModel.password + HASH_STR);
+            const handle = await UserService.handleLogin(username, password);
+            const {code, mess, data} = handle;
+
+            if (! handle.status) {
+                return new ResponseObj(code, mess);
             }
-            const token = jwt.sign({ user: user }, SECRET, {expiresIn: '24h'});
             
-            return new ResponseObj(200, 'Login Succsessfully', {token: token});
+            return new ResponseObj(code, mess, data);
         } catch (err) {
             console.log(err);
             return new ResponseObj(500, err);

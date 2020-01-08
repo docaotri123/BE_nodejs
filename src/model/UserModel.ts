@@ -1,6 +1,6 @@
 export class UserModel {
-    Email: string;
-    Phone: string;
-    Password: string;
-    Role: string;
+    email: string;
+    phone: string;
+    password: string;
+    role: string;
 }
