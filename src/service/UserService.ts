@@ -10,15 +10,28 @@ import { SECRET } from "../app.config";
 
 export class UserService {
 
-    public static async registerUser(user: UserModel): Promise<HandleObj> {
+    private static instance: UserService;
+
+    private constructor() { }
+
+    public static getInstance(): UserService {
+        if (!UserService.instance) {
+            UserService.instance = new UserService();
+        }
+
+        return UserService.instance;
+    }
+
+    public async registerUser(user: UserModel): Promise<HandleObj> {
         try {
             // check unique user
-            const email = await UserService.getUserByEmail(user.email);
+            const instance = UserService.getInstance();
+            const email = await instance.getUserByEmail(user.email);
             if (email) {
                 return new HandleObj(false, 400, 'Email has exists');
             }
 
-            await UserService.insertUser(user);
+            await instance.insertUser(user);
 
             return new HandleObj(true, 201, 'Register is successfully');
         } catch (err) {
@@ -27,12 +40,19 @@ export class UserService {
         }
     }
 
-    public static async handleLogin(username: string, password: string | Int32Array): Promise<HandleObj> {
+    public async handleLogin(username: string, password: string | Int32Array): Promise<HandleObj> {
         try {
-            const user = UserService.getUserByEmailAndPassword(username, password);
+            const instance = UserService.getInstance();
+            const user = await instance.getUserByEmail(username);
 
             if (!user) {
-                return new HandleObj(false, 400, 'username or password incorrect');
+                return new HandleObj(false, 400, 'username incorrect');
+            }
+
+            const checkPassword = await instance.getUserByEmailAndPassword(username, password);
+
+            if (!checkPassword) {
+                return new HandleObj(false, 401, 'password incorrect');
             }
 
             const token = jwt.sign({ user: user }, SECRET, {expiresIn: '24h'});
@@ -44,15 +64,11 @@ export class UserService {
         }
     }
 
-    public static getUserByEmail(email: string): Promise<User> {
+    public getUserByEmail(email: string): Promise<User> {
         return getConnection().manager.findOne(User, { email: email });
     }
 
-    public static getUserById(userId: string): Promise<User> {
-        return getConnection().manager.findOne(User, { id: userId });
-    }
-
-    public static getUserByEmailAndPassword(username: string, password: string | Int32Array): Promise<User> {
+    public getUserByEmailAndPassword(username: string, password: string | Int32Array): Promise<User> {
         return getConnection()
             .createQueryBuilder()
             .select('u.id')
@@ -64,14 +80,18 @@ export class UserService {
             .getOne();
     }
 
-    public static getRandomUser(): Promise<User> {
+    public getUserById(userId: string): Promise<User> {
+        return getConnection().manager.findOne(User, { id: userId });
+    }
+
+    public getRandomUser(): Promise<User> {
         return getConnection().createQueryBuilder()
             .select('u.id')
             .from(User, 'u')
             .getOne();
     }
 
-    public static async insertUser(user: UserModel): Promise<any> {
+    public async insertUser(user: UserModel): Promise<any> {
         // save user with role (customer)
         const userEntity = new User();
         userEntity.email = user.email;
