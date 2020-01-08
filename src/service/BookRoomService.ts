@@ -21,8 +21,9 @@ export class BookRoomService {
         const connection = getConnection();
         const transaction = connection.createQueryRunner();
         try {
+            const userInstance = UserService.getInstance();
              // create group
-             const user = await UserService.getUserById(bookings[0].userId);
+             const user = await userInstance.getUserById(bookings[0].userId);
              const min = Common.minStartDate(bookings).startDate;
              const max = Common.maxEndDate(bookings).endDate;
 
@@ -51,7 +52,7 @@ export class BookRoomService {
              const itemQueue = new BookingQueueModel(bookings, groupResult.id, temps);
              await startPublisher(itemQueue);
 
-            return new HandleObj(true);
+            return new HandleObj(true, 201);
         } catch (err) {
             console.log(err);
             await transaction.rollbackTransaction();
@@ -113,7 +114,7 @@ export class BookRoomService {
                 .set({ isCancelled: true })
                 .where('id = :id', { id: bookingId })
                 .execute();
-            return new HandleObj(true);
+            return new HandleObj(true, 201);
         } catch (err) {
             console.log(err);
             return new HandleObj(false, err);

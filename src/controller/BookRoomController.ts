@@ -33,8 +33,9 @@ export class BookRoomController {
         if (!permission.allow && permission.user) {
             return new ResponseObj(401, 'Not authorizer');
         }
+        const userInstance = UserService.getInstance();
 
-        const user = await UserService.getUserById(body.userId);
+        const user = await userInstance.getUserById(body.userId);
 
         if(!user) {
             return new ResponseObj(402, 'User not found');
