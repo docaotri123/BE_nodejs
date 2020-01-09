@@ -1,14 +1,12 @@
 import { getConnection } from "typeorm";
 import { MomentDateTime } from "../util/DateTimeUTC";
 import { BookRoom } from "../entity/BookRoom";
-import { BOOKING } from "../constant";
 import { BookingQueueModel } from "../model/BookingQueue";
 import { TempBookingService } from "./TempBookingService";
 import { GroupBookingService } from "./GroupBookingService";
 import { RoomService } from "./RoomService";
 import { BookRoomModel } from "../model/BookRoomModel";
 import { GroupBooking } from "../entity/GroupBooking";
-import { User } from "../entity/User";
 import { UserService } from "./UserService";
 import { TempBookRoom } from "../entity/TempBookRoom";
 import { startPublisher } from "../job_queue/publisher";
@@ -17,7 +15,19 @@ import Common from "../util/Common";
 
 export class BookRoomService {
 
-    public static async bookingRooms(bookings: BookRoomModel[]) {
+    private static instance: BookRoomService;
+
+    private constructor() { }
+
+    public static getInstance(): BookRoomService {
+        if (!BookRoomService.instance) {
+            BookRoomService.instance = new BookRoomService();
+        }
+
+        return BookRoomService.instance;
+    }
+
+    public async handleBookingRooms(bookings: BookRoomModel[]) {
         const connection = getConnection();
         const transaction = connection.createQueryRunner();
         try {
@@ -53,7 +63,7 @@ export class BookRoomService {
              const itemQueue = new BookingQueueModel(bookings, groupResult.id, temps);
              await startPublisher(itemQueue);
 
-            return new HandleObj(true, 201);
+            return new HandleObj(true, 201,'bookings is pending');
         } catch (err) {
             console.log(err);
             await transaction.rollbackTransaction();
@@ -61,8 +71,15 @@ export class BookRoomService {
         }
     }
 
-    public static async statusBookings(userId: string) {
+    public async getStatusBookings(userId: string) {
         try {
+            const userInstance = UserService.getInstance();
+            const user = await userInstance.getUserById(userId);
+
+            if (!user) {
+                return new HandleObj(false, 402, 'User not found');
+            }
+
             const groups = await GroupBookingService.getGroupBookingByUser(userId);
             const length = groups.length;
             const results = [];
@@ -72,44 +89,46 @@ export class BookRoomService {
                 const temps = await TempBookingService.getStatusTempBookingByGroup(group);
                 results.push(temps);
             }
-            
-            return new HandleObj(true,null,results);
-        } catch(err) {
+
+            return new HandleObj(true, 200, 'get status booking', results);
+        } catch (err) {
             console.log(err);
-            return new HandleObj(false,err);
+            return new HandleObj(false, err);
         }
     }
 
-    public static async availableRoomsByDay(timestamp: number) {
+    public async getAvailableRoomsByDay(timestamp: number) {
+        const instance = BookRoomService.getInstance();
         const roomInstance = RoomService.getInstance();
         try {
             const startDay = MomentDateTime.startSpecificDayUtc(timestamp);
             const rooms = await roomInstance.getRooms();
-            const booksByDay = await BookRoomService.getBookingByDays(startDay);
+            const booksByDay = await instance.getBookingByDays(startDay);
             const results = roomInstance.getRoomsNotBooking(rooms, booksByDay);
-            return new HandleObj(true, null, results);
+            return new HandleObj(true, 200, 'get available is successfully', results);
         } catch(err) {
             console.log(err);
             return new HandleObj(false, err);
         }
     }
 
-    public static async availableRoomsByTime(body) {
+    public async getAvailableRoomsByTime(body) {
+        const instance = BookRoomService.getInstance();
         const roomInstance = RoomService.getInstance();
         try {
             const startTime = MomentDateTime.getDateUtc(body.startTime);
             const endTime = MomentDateTime.getDateUtc(body.endTime);
             const rooms = await roomInstance.getRooms();
-            const booksByTime = await BookRoomService.getBookingByTimes(startTime, endTime);
+            const booksByTime = await instance.getBookingByTimes(startTime, endTime);
             const results = roomInstance.getRoomsNotBooking(rooms, booksByTime);
-            return new HandleObj(true, null, results);
+            return new HandleObj(true, 200, 'get available is successfully', results);
         } catch(err) {
             console.log(err);
             return new HandleObj(false, err);
         }
     }
 
-    public static async cancelRoomById(bookingId: number) {
+    public async cancelBookingById(bookingId: number) {
         try {
             await getConnection()
                 .createQueryBuilder()
@@ -117,56 +136,17 @@ export class BookRoomService {
                 .set({ isCancelled: true })
                 .where('id = :id', { id: bookingId })
                 .execute();
-            return new HandleObj(true, 201);
+            return new HandleObj(true, 201, 'cancel booking is successfully');
         } catch (err) {
             console.log(err);
             return new HandleObj(false, err);
         }
     }
 
-    public static async handleBookingRooms(itemQueue: BookingQueueModel) {
+    public async checkStartGreaterToday(bookingId: number) {
+        const instance = BookRoomService.getInstance();
         try {
-            const roomInstance = RoomService.getInstance();
-            const bookings = itemQueue.dataAPI;
-            const tempBookingIds = itemQueue.tempBookingIds;
-            const length = bookings.length;
-            let flag = true;
-            // find tempBooking and update
-            for (let i = 0; i < length; i++) {
-                const booking = bookings[i];
-                const isBooked = await BookRoomService.getBookingByRoomIdAndStartDate(booking.roomID, booking.startDate);                
-                if (isBooked) {
-                    flag = false;
-                }
-                const statusBooking = isBooked ? BOOKING.BOOKED : BOOKING.SUCCESS;
-                await TempBookingService.updateStatusTempBooking(tempBookingIds[i], statusBooking);
-            }
-
-            // add booking_room
-            if (flag) {
-                const group = await GroupBookingService.getGroupById(itemQueue.groupId);
-                for (let i = 0; i < length; i++) {
-                    const room = await roomInstance.getRoomById(bookings[i].roomID);
-                    const bookRoom = new BookRoom();
-                    bookRoom.startDate = MomentDateTime.getDateUtc(bookings[i].startDate);
-                    bookRoom.endDate = MomentDateTime.getDateUtc(bookings[i].endDate);
-                    bookRoom.group = group;
-                    bookRoom.room = room;
-
-                    await BookRoomService.insertBookingRoom(bookRoom);
-                }
-            }
-            return true;
-        } catch (err) {
-            console.log('handle booking error');
-            console.log(err);
-            return false;
-        }
-    }
-
-    public static async checkStartGreaterToday(bookingId: number) {
-        try {
-            const room = await BookRoomService.getBookingById(bookingId);
+            const room = await instance.getBookingById(bookingId);
             const today = MomentDateTime.getCurrentDate();
             return today >= room.startDate
         } catch(err) {
@@ -174,7 +154,7 @@ export class BookRoomService {
         }
     }
 
-    public static getRandomBooking() {
+    public getRandomBooking() {
         return getConnection().createQueryBuilder()
             .select('br.id')
             .from(BookRoom, 'br')
@@ -182,11 +162,11 @@ export class BookRoomService {
             .getOne();
     }
 
-    public static getBookingById(bookingId: number) {
+    public getBookingById(bookingId: number) {
         return getConnection().manager.findOne(BookRoom, {id: bookingId, isCancelled: false});
     }
 
-    public static getBookingByRoomIdAndStartDate(roomID: number, startDate: number) {
+    public getBookingByRoomIdAndStartDate(roomID: number, startDate: number) {
         const _startDate = MomentDateTime.getDateUtc(startDate);
         return getConnection()
             .createQueryBuilder()
@@ -197,7 +177,7 @@ export class BookRoomService {
             .getOne();
     }
 
-    public static getBookingByTimes(startDate: Date, endDate: Date) {
+    public getBookingByTimes(startDate: Date, endDate: Date) {
         return getConnection().createQueryBuilder()
             .select('br')
             .from(BookRoom, 'br')
@@ -211,7 +191,7 @@ export class BookRoomService {
             .getMany();
     }
 
-    public static getBookingByDays(startDate: Date) {
+    public getBookingByDays(startDate: Date) {
         return getConnection().createQueryBuilder()
             .select('br')
             .from(BookRoom, 'br')
@@ -221,7 +201,7 @@ export class BookRoomService {
             .getMany();
     }
 
-    public static insertBookingRoom(booking: BookRoom) {
+    public insertBookingRoom(booking: BookRoom) {
         return getConnection().manager.save(booking);
     }
 

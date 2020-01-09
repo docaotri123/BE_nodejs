@@ -9,7 +9,8 @@ console.log('connect SQL');
 createConnection(sqlConfig)
     .then((connection) => {
         connection.runMigrations();
-        listenToBookingQueue(BookRoomService.handleBookingRooms);
+        const bookingInstance = BookRoomService.getInstance();
+        listenToBookingQueue(bookingInstance.handleBookingRooms);
     })
     .catch(err => {
         console.log('Error while connecting to the database', err);

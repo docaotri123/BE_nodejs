@@ -1,156 +1,129 @@
-import { JsonController, Body, Post, Param, Get, Put } from 'routing-controllers';
+import { JsonController, Body, Post, Param, Put } from 'routing-controllers';
 import { BookRoomModel } from '../model/BookRoomModel';
 import { ResponseObj } from '../model/ResponseModel';
 import { checkPermission } from '../middleware/Authorizer';
-import { ROLE, BOOKING } from '../constant';
-import { Room } from '../entity/Room';
-import { MomentDateTime } from '../util/DateTimeUTC';
-import { getConnection } from 'typeorm';
-import { User } from '../entity/User';
-import { BookRoom } from '../entity/BookRoom';
-import { startPublisher } from '../job_queue/publisher';
-import { TempBookRoom } from '../entity/TempBookRoom';
-import { BookingQueueModel } from '../model/BookingQueue';
-import { GroupBooking } from '../entity/GroupBooking';
+import { ROLE } from '../constant';
 import { BookRoomService } from '../service/BookRoomService';
-import { RoomService } from '../service/RoomService';
-import { UserService } from '../service/UserService';
-import { TempBookingService } from '../service/TempBookingService';
-import { GroupBookingService } from '../service/GroupBookingService';
-import { HandleObj } from '../model/HandleModel';
+import Common from '../util/Common';
+import { PermissionModel } from '../model/PermissionModel';
 
 @JsonController()
 export class BookRoomController {
 
     @Post('/statusbookingrooms')
     async getStatusBookingRoom(
-        @checkPermission([ROLE.ADMIN, ROLE.CUSTOMER]) permission,
+        @checkPermission([ROLE.ADMIN, ROLE.CUSTOMER]) permission: PermissionModel,
         @Body() body: any) {
-        if (!permission.allow && !permission.user) {
-            return new ResponseObj(400, 'Token expired');
+        const allow = Common.getPermission(permission);
+
+        if (!allow.status) {
+            return new ResponseObj(allow.code, allow.mess);
         }
 
-        if (!permission.allow && permission.user) {
-            return new ResponseObj(401, 'Not authorizer');
-        }
-        const userInstance = UserService.getInstance();
+        const bookingInstance = BookRoomService.getInstance();
+        const { status, code, mess, data } = await bookingInstance.getStatusBookings(body.userId);
 
-        const user = await userInstance.getUserById(body.userId);
-
-        if(!user) {
-            return new ResponseObj(402, 'User not found');
+        if (!status) {
+            return new ResponseObj(code, mess);
         }
 
-        const handle: any = await BookRoomService.statusBookings(body.userId);
-
-        if (!handle.status) {
-            return new ResponseObj(500, handle.err);
-        }
-        return new ResponseObj(200, 'status booking rooms', handle.data);
+        return new ResponseObj(code, mess, data);
     }
 
     @Post('/availableroomsday')
     async getAvailableRoom(@Body() body: any) {
-        const handle: any = BookRoomService.availableRoomsByDay(body.time);
-        if (!handle.status) {
-            return new ResponseObj(500, handle.err); 
+        const bookingInstance = BookRoomService.getInstance();
+        const { status, code, mess, data } = await bookingInstance.getStatusBookings(body.time);
+
+        if (!status) {
+            return new ResponseObj(code, mess);
         }
-        return new ResponseObj(200, handle.data);
+
+        return new ResponseObj(code, mess, data);
     }
 
     @Post('/bookingroom')
     async bookRoom(
-        @checkPermission([ROLE.ADMIN, ROLE.CUSTOMER]) permission,
-        @Body() BookingsBody: BookRoomModel) {
-        if (!permission.allow && !permission.user) {
-            return new ResponseObj(400, 'Token expired');
+        @checkPermission([ROLE.ADMIN, ROLE.CUSTOMER]) permission: PermissionModel,
+        @Body() bookingsBody: BookRoomModel) {
+        const allow = Common.getPermission(permission);
+
+        if (!allow.status) {
+            return new ResponseObj(allow.code, allow.mess);
         }
 
-        if (!permission.allow && permission.user) {
-            return new ResponseObj(401, 'Not authorizer');
-        }
-        const handle: any = await BookRoomService.bookingRooms([BookingsBody]);
+        const bookingInstance = BookRoomService.getInstance();
+        const { status, code, mess } = await bookingInstance.handleBookingRooms([bookingsBody])
 
-        if (!handle.status) {
-            return new ResponseObj(500, handle.err);
+        if (!status) {
+            return new ResponseObj(code, mess);
         }
-        return new ResponseObj(200, 'Booing Room is pending');
+
+        return new ResponseObj(code, mess);
     }
 
     @Put('/cancelroom/:id')
     async cancelRoom(
         @Param('id') bookingId: number,
         @checkPermission([ROLE.ADMIN, ROLE.CUSTOMER]) permission) {
-        if (!permission.allow && !permission.user) {
-            return new ResponseObj(400, 'Token expired');
+        const allow = Common.getPermission(permission);
+
+        if (!allow.status) {
+            return new ResponseObj(allow.code, allow.mess);
         }
 
-        if (!permission.allow && permission.user) {
-            return new ResponseObj(401, 'Not authorizer');
+        const bookingInstance = BookRoomService.getInstance();
+        const { status, code, mess } = await bookingInstance.cancelBookingById(bookingId);
+
+        if (!status) {
+            return new ResponseObj(code, mess);
         }
 
-        const checkTime = await BookRoomService.checkStartGreaterToday(bookingId)
-
-        if (checkTime) {
-            return new ResponseObj(402, 'startDate greater today ! can not cancel room');
-        }
-
-        const handle: any = BookRoomService.cancelRoomById(bookingId);
-
-        if (!handle.status) {
-            return new ResponseObj(500, handle.err);
-        }
-
-        return new ResponseObj(200, 'Cancel room successfully');
+        return new ResponseObj(code, mess);
     }
 
     @Put('/editbooking/:id')
     async editBooking(
         @Param('id') idBooking: number,
         @checkPermission([ROLE.ADMIN, ROLE.CUSTOMER]) permission) {
-        try {
-            if (!permission.allow && !permission.user) {
-                return new ResponseObj(400, 'Token expired');
-            }
-    
-            if (!permission.allow && permission.user) {
-                return new ResponseObj(401, 'Not authorizer');
-            }
-            return new ResponseObj(201, 'Edit book room is successfully');
-        } catch (err) {
-            console.log(err);
-            return new ResponseObj(500, err);
+        const allow = Common.getPermission(permission);
+
+        if (!allow.status) {
+            return new ResponseObj(allow.code, allow.mess);
         }
+
+        return new ResponseObj(200, '');
     }
 
     @Post('/availableroomstime')
     async getAvailableRoomTime(@Body() body: any) {
-        const handle: any = await BookRoomService.availableRoomsByTime(body);
-        if (!handle.status) {
-            return new ResponseObj(500, handle.err);
+        const bookingInstance = BookRoomService.getInstance();
+        const { status, code, mess, data } = await bookingInstance.getAvailableRoomsByTime(body);
+
+        if (!status) {
+            return new ResponseObj(code, mess);
         }
 
-        return new ResponseObj(200, 'available rooms in time', handle.data);
+        return new ResponseObj(code, mess, data);
     }
 
     @Post('/bookingrooms')
     async bookingRooms(
         @checkPermission([ROLE.ADMIN, ROLE.CUSTOMER]) permission,
         @Body() roomsBody: BookRoomModel[]) {
-        if (!permission.allow && !permission.user) {
-            return new ResponseObj(400, 'Token expired');
+        const allow = Common.getPermission(permission);
+
+        if (!allow.status) {
+            return new ResponseObj(allow.code, allow.mess);
         }
 
-        if (!permission.allow && permission.user) {
-            return new ResponseObj(401, 'Not authorizer');
+        const bookingInstance = BookRoomService.getInstance();
+        const { status, code, mess } = await bookingInstance.handleBookingRooms(roomsBody)
+
+        if (!status) {
+            return new ResponseObj(code, mess);
         }
 
-        const handle: any = await BookRoomService.bookingRooms(roomsBody);
-
-        if (!handle.status) {
-            return new ResponseObj(500, handle.err);
-        }
-
-        return new ResponseObj(201, 'Booking rooms is pending');
+        return new ResponseObj(code, mess);
     }
 }

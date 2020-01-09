@@ -2,7 +2,6 @@ import { getConnection } from "typeorm";
 import { Room } from "../entity/Room";
 import { BookRoom } from "../entity/BookRoom";
 import { HandleObj } from "../model/HandleModel";
-import Common from "../util/Common";
 import { RoomModel } from "../model/RoomModel";
 import { TypeService } from "./TypeService";
 
