@@ -1,3 +1,6 @@
+import { HandleObj } from "../model/HandleModel";
+import { PermissionModel } from "../model/PermissionModel";
+
 export default class Common {
     public static mapExistsInTwoArray(source: any[], destination: any[]) {
         return source.map((value, index) => {
@@ -30,5 +33,17 @@ export default class Common {
 
     public static getRandomInt(max: number) {
         return Math.floor(Math.random() * Math.floor(max));
+    }
+
+    public static getPermission(permission: PermissionModel): HandleObj {
+        if (!permission.allow && !permission.user) {
+            return new HandleObj(false , 400, 'Token expired');
+        }
+
+        if (!permission.allow && permission.user) {
+            return new HandleObj(false , 401, 'Not authorizer');
+        }
+
+        return new HandleObj(true, 200);
     }
 }

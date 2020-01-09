@@ -1,129 +1,85 @@
 import { JsonController, Get, Post, Put, Body, Param, Delete } from 'routing-controllers';
-import { ResponseObj } from '../model/response';
+import { ResponseObj } from '../model/ResponseModel';
 import { checkPermission } from '../middleware/Authorizer';
 import { ROLE } from '../constant';
 import { RoomModel } from '../model/RoomModel';
-import { Room } from '../entity/Room';
-import { getConnection } from 'typeorm';
-import { Type } from '../entity/Type';
-import { User } from '../entity/User';
+import { RoomService } from '../service/RoomService';
+import Common from '../util/Common';
+import { PermissionModel } from '../model/PermissionModel';
 
 
 @JsonController()
 export class RoomController {
 
-    @Get('/test')
-    async Test() {
-        try {
-            const users = await getConnection().manager
-            .createQueryBuilder()
-            .select('u')
-            .from(User, 'u')
-            .getMany();
-
-            return new ResponseObj(200, 'Test okie', users);
-        } catch (err) {
-            console.log('------ERRORRRR API Test-------');
-            console.log(err);
-            return new ResponseObj(500, err);
-        }
-    }
-
     @Get('/rooms')
     async ListRoom(
-        @checkPermission([ROLE.ADMIN]) permission) {
-        try {
-            if (!permission.allow && !permission.user) {
-                return new ResponseObj(400, 'Token expired');
-            }
+        @checkPermission([ROLE.ADMIN]) permission: PermissionModel) {
+        const allow = Common.getPermission(permission);
 
-            if (!permission.allow && permission.user) {
-                return new ResponseObj(401, 'Not authorizer');
-            }
-            const rooms = await getConnection().manager
-                .createQueryBuilder()
-                .select('r')
-                .from(Room, 'r')
-                .leftJoinAndMapOne('r.type', 'type', 't', 't.id = r.type')
-                .where('isDeleted = :isDeleted', {isDeleted: false})
-                .getMany();
-
-            return new ResponseObj(200, 'get list rooms successfully', rooms);
-        } catch (err) {
-            console.log(err);
-            return new ResponseObj(500, err);
+        if(!allow.status) {
+            return new ResponseObj(allow.code, allow.mess);
         }
+
+        const roomInstance = RoomService.getInstance();
+        const {status, code, mess, data } = await roomInstance.handleGetRooms();
+
+        if (!status) {
+            return new ResponseObj(code, mess);
+        }
+
+        return new ResponseObj(code, mess, data);
     }
 
     @Post('/room')
     async CreateRoom(
-        @checkPermission([ROLE.ADMIN]) permission,
+        @checkPermission([ROLE.ADMIN]) permission: PermissionModel,
         @Body() roomModel: RoomModel) {
+        const allow = Common.getPermission(permission);
 
-        try {
-            if (!permission.allow && !permission.user) {
-                return new ResponseObj(400, 'Token expired');
-            }
-
-            if (!permission.allow && permission.user) {
-                return new ResponseObj(401, 'Not authorizer');
-            }
-            const room = new Room();
-            room.description = roomModel.description;
-            room.imageURL = roomModel.image;
-            room.quality = roomModel.quality;
-            room.price = roomModel.price;
-            const type = await getConnection().manager.findOne(Type, {type: roomModel.type});
-            if (!type) {
-                return new ResponseObj(400, 'Type room is not exits');
-            }
-            room.type = type;
-
-            await getConnection().manager.save(room);
-            
-            return new ResponseObj(200, 'Create room successfully');
-        } catch (err) {
-            console.log(err);
-            return new ResponseObj(500, err);
+        if (!allow.status) {
+            return new ResponseObj(allow.code, allow.mess);
         }
+
+        const roomInstance = RoomService.getInstance();
+        const { status, code, mess, data } = await roomInstance.handleInsertRoom(roomModel);
+
+        if (!status) {
+            return new ResponseObj(code, mess);
+        }
+
+        return new ResponseObj(code, mess, data);
     }
 
     @Put('/room/:id')
     async EditRoom(
-        @checkPermission([ROLE.ADMIN]) permission) {
-        try {
-            return new ResponseObj(200, 'Edit room successfully');
-        } catch (err) {
-            console.log(err);
-            return new ResponseObj(500, err);
+        @checkPermission([ROLE.ADMIN]) permission: PermissionModel
+    ) {
+        const allow = Common.getPermission(permission);
+
+        if (!allow.status) {
+            return new ResponseObj(allow.code, allow.mess);
         }
     }
 
     @Delete('/room/:id')
     async DeleteRoom(
         @Param('id') id: number,
-        @checkPermission([ROLE.ADMIN]) permission) {
-        try {
-            if (!permission.allow && !permission.user) {
-                return new ResponseObj(400, 'Token expired');
-            }
+        @checkPermission([ROLE.ADMIN]) permission: PermissionModel
+    ) {
+        const allow = Common.getPermission(permission);
 
-            if (!permission.allow && permission.user) {
-                return new ResponseObj(401, 'Not authorizer');
-            }
-            
-            await getConnection()
-                .createQueryBuilder()
-                .update(Room)
-                .set({ isDeleted: true})
-                .where('id = :id', { id: id })
-                .execute();
-
-            return new ResponseObj(200, 'Delete room successfully');
-        } catch (err) {
-            console.log(err);
-            return new ResponseObj(500, err);
+        if (!allow.status) {
+            return new ResponseObj(allow.code, allow.mess);
         }
+
+        const roomInstance = RoomService.getInstance();
+        const { status, code, mess, data } = await roomInstance.deleteRoom(id);
+
+        if (!status) {
+            return new ResponseObj(code, mess);
+        }
+
+        return new ResponseObj(code, mess, data);
     }
 
 }

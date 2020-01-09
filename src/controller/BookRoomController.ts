@@ -1,6 +1,6 @@
 import { JsonController, Body, Post, Param, Get, Put } from 'routing-controllers';
 import { BookRoomModel } from '../model/BookRoomModel';
-import { ResponseObj } from '../model/response';
+import { ResponseObj } from '../model/ResponseModel';
 import { checkPermission } from '../middleware/Authorizer';
 import { ROLE, BOOKING } from '../constant';
 import { Room } from '../entity/Room';

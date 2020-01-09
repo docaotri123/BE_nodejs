@@ -22,6 +22,7 @@ export class BookRoomService {
         const transaction = connection.createQueryRunner();
         try {
             const userInstance = UserService.getInstance();
+            const roomInstance = RoomService.getInstance();
              // create group
              const user = await userInstance.getUserById(bookings[0].userId);
              const min = Common.minStartDate(bookings).startDate;
@@ -39,7 +40,7 @@ export class BookRoomService {
              const temps = [];
              for (let i = 0; i < length; i++) {
                  const booking = bookings[i];
-                 const room = await RoomService.getRoomById(booking.roomID);
+                 const room = await roomInstance.getRoomById(booking.roomID);
                  const tempBooking = new TempBookRoom();
                  TempBookingService.mapTempBookingEntity(tempBooking, booking, groupResult, room);
                  const tempResult = await transaction.manager.save(tempBooking);
@@ -80,11 +81,12 @@ export class BookRoomService {
     }
 
     public static async availableRoomsByDay(timestamp: number) {
+        const roomInstance = RoomService.getInstance();
         try {
             const startDay = MomentDateTime.startSpecificDayUtc(timestamp);
-            const rooms = await RoomService.getRooms();
+            const rooms = await roomInstance.getRooms();
             const booksByDay = await BookRoomService.getBookingByDays(startDay);
-            const results = RoomService.getRoomsNotBooking(rooms, booksByDay);
+            const results = roomInstance.getRoomsNotBooking(rooms, booksByDay);
             return new HandleObj(true, null, results);
         } catch(err) {
             console.log(err);
@@ -93,12 +95,13 @@ export class BookRoomService {
     }
 
     public static async availableRoomsByTime(body) {
+        const roomInstance = RoomService.getInstance();
         try {
             const startTime = MomentDateTime.getDateUtc(body.startTime);
             const endTime = MomentDateTime.getDateUtc(body.endTime);
-            const rooms = await RoomService.getRooms();
+            const rooms = await roomInstance.getRooms();
             const booksByTime = await BookRoomService.getBookingByTimes(startTime, endTime);
-            const results = RoomService.getRoomsNotBooking(rooms, booksByTime);
+            const results = roomInstance.getRoomsNotBooking(rooms, booksByTime);
             return new HandleObj(true, null, results);
         } catch(err) {
             console.log(err);
@@ -123,6 +126,7 @@ export class BookRoomService {
 
     public static async handleBookingRooms(itemQueue: BookingQueueModel) {
         try {
+            const roomInstance = RoomService.getInstance();
             const bookings = itemQueue.dataAPI;
             const tempBookingIds = itemQueue.tempBookingIds;
             const length = bookings.length;
@@ -142,7 +146,7 @@ export class BookRoomService {
             if (flag) {
                 const group = await GroupBookingService.getGroupById(itemQueue.groupId);
                 for (let i = 0; i < length; i++) {
-                    const room = await RoomService.getRoomById(bookings[i].roomID);
+                    const room = await roomInstance.getRoomById(bookings[i].roomID);
                     const bookRoom = new BookRoom();
                     bookRoom.startDate = MomentDateTime.getDateUtc(bookings[i].startDate);
                     bookRoom.endDate = MomentDateTime.getDateUtc(bookings[i].endDate);

@@ -1,4 +1,4 @@
-import { ResponseObj } from '../model/response';
+import { ResponseObj } from '../model/ResponseModel';
 import { Post, Body, JsonController } from 'routing-controllers';
 import { UserModel } from '../model/UserModel';
 import { Md5 } from 'ts-md5';
