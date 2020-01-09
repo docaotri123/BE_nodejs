@@ -1,7 +1,7 @@
-import { createConnection } from "typeorm";
-import { sqlConfig_test } from "../app.config";
+import { createConnection, getConnection } from "typeorm";
+import { sqlConfig } from "../app.config";
 
 (async () => {
-    console.log('connect DB');
-    await createConnection(sqlConfig_test);
+    console.log('connect DB:'+ process.env.DATABASE_NAME);
+    await createConnection(sqlConfig);    
 })();

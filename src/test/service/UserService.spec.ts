@@ -1,113 +1,149 @@
 import { expect, should } from 'chai';
 import 'mocha';
-import { createConnection, getConnection, getConnectionManager } from 'typeorm';
-import { sqlConfig_test, sqlConfig } from '../../app.config';
 import { Md5 } from "ts-md5";
 import { HASH_STR, ROLE } from '../../constant'
 import { UserService } from '../../service/UserService';
 import { UserModel } from '../../model/UserModel';
+import Common from '../../util/Common';
+import { before } from 'mocha';
 
 
 describe('UserService', () => {
+    const userInstance = UserService.getInstance();
 
-    describe('getUserByEmail', () => {
-        const email = 'trido@gmail.com'
-        const email_not_exist = 'trinot@gmail.com'
 
-        it('check get user is not null', () => {
+    describe('getUserByEmailAndPassword', () => {
+        let email, password , email_not_exist;
 
+        before(()=>{
+            email = 'trido@gmail.com';
+            password = Md5.hashStr('e10adc3949ba59abbe56e057f20f883e' + HASH_STR);
+            email_not_exist = 'trinot@gmail.com'
         })
 
-        it('check get user is null', () => {
-            
+        it('check username is incorrect', async () => {
+            const user = await userInstance.getUserByEmailAndPassword(email_not_exist, password);
+            should().not.exist(user);
+        })
+
+        it('check username is correct and password is incorrect', async () => {
+            const checkPass = await userInstance.getUserByEmailAndPassword(email, '....');
+            should().not.exist(checkPass);
+        })
+
+        it('check username and password is correct', async () => {
+            const user = await userInstance.getUserByEmailAndPassword(email, password)
+            expect(user.email).to.equal(email);
         })
     })
 
-    describe('getUserByEmailAndPassword', () => {
-        const email = 'trido@gmail.com'
-        const password = Md5.hashStr('e10adc3949ba59abbe56e057f20f883e' + HASH_STR);
-        const email_not_exist = 'trinot@gmail.com'
-
-        it('check username is incorrect', () => {
-
+    describe('getUserByEmail', () => {
+        it('check get user is not null',async () => {
+            const user = await userInstance.getUserByEmail('trido@gmail.com');
+            should().exist(user);
         })
 
-        it('check username is correct and password is incorrect', () => {
-            
-        })
-
-        it('check username and password is correct', () => {
-
+        it('check get user is null',async () => {
+            const user = await userInstance.getUserByEmail('trinot@gmail.com');
+            should().not.exist(user);
         })
     })
 
     describe('getUserById', () => {
-        const userId = 'abc'
+        const userId = '1ec4eee9-e858-41fd-852c-8202ec783e59'
 
-        it('check get user is not null', () => {
-
+        it('check get user is not null',async () => {
+            const user = await userInstance.getUserById(userId);
+            expect(user).to.have.property('id');
+            expect(user.id).to.equal(userId);
         })
 
-        it('check get user is null', () => {
-            
+        it('check get user is null',async () => {
+            const user = await userInstance.getUserById('-1');
+            should().not.exist(user);
         })
     })
 
     describe('getRandomUser', () => {
 
-        it('check get user', () => {
-
+        it('check get user', async () => {
+            const user = await userInstance.getRandomUser();
+            expect(user).to.have.property('id');
         })
     })
 
-    describe('insertUser', () => {
+    xdescribe('insertUser', () => {
 
-        // const user = new UserModel();
-        // user.email = 'dctri@email.com';
-        // user.password = 'e10adc3949ba59abbe56e057f20f883e';
-        // user.phone = '0965528621';
+        const user = new UserModel();
+        user.email = `${Common.getRandomInt(100)}dctri${Common.getRandomInt(500)}@email.com`;
+        user.password = 'e10adc3949ba59abbe56e057f20f883e';
+        user.phone = '0965528621';
 
-        // it('check insert user success',async () => {
-        //     const result = await userInstance.insertUser(user);
-        //     expect(result).to.have.property('id');
-        // })
+        it('check insert user success',async () => {
+            const result = await userInstance.insertUser(user);
+            expect(result).to.have.property('id');
+        })
 
-        // it('check insert user fail', async () => {
-        //     try {
-        //         user.email = null;
-        //         await userInstance.insertUser(user);
-        //     } catch(err) {
-        //         should().exist(err);
-        //     }
-        // })
+        it('check insert user fail', async () => {
+            try {
+                user.email = null;
+                await userInstance.insertUser(user);
+            } catch(err) {
+                should().exist(err);
+            }
+        })
     })
 
-    describe('registerUser', () => {
+    describe('registerUser', async () => {
 
-        it('register is successfully', () => {
+        const user = new UserModel();
+        user.email = 'trido@gmail.com';
+        user.password ='e10adc3949ba59abbe56e057f20f883e';
+        user.phone = '01688946252';
 
+        it('register has email exists', async () => {
+            const handle = await userInstance.registerUser(user);
+            const { code } = handle;
+            expect(code).to.equal(400);
         })
 
-        it('register has email exists', () => {
-
+        it('register is successfully', async () => {
+            user.email = `${Common.getRandomInt(500)}tri${Common.getRandomInt(200)}cao${Common.getRandomInt(500)}@gmail.com`;
+            const handle = await userInstance.registerUser(user);
+            const { code } = handle;
+            expect(code).to.equal(201);
         })
+
+        it('register is server error', async () => {
+            user.email = null;
+            const handle = await userInstance.registerUser(user);
+            const { code } = handle;
+            expect(code).to.equal(500);
+        })
+
     })
     
     describe('handleLogin', () => {
-        const email = 'trido@gmail.com'
+        const username = 'trido@gmail.com'
         const password = Md5.hashStr('e10adc3949ba59abbe56e057f20f883e' + HASH_STR);
-        const email_not_exist = 'trinot@gmail.com'
 
-        it('handleLogin username is incorrect', () => {
-
+        it('handleLogin username is incorrect', async () => {
+            const handle = await userInstance.handleLogin(username +'.', password);
+            const { code } = handle;
+            expect(code).to.equal(400);
         })
 
-        it('handleLogin username is correct and password is incorrect', () => {
-            
+        it('handleLogin username is correct and password is incorrect', async () => {
+            const handle = await userInstance.handleLogin(username , password+'.');
+            const { code } = handle;
+            expect(code).to.equal(401);
         })
 
-        it('handleLogin is succesfully', () => {
-
+        it('handleLogin is succesfully', async () => {
+            const handle = await userInstance.handleLogin(username , password);
+            const { code, data } = handle;
+            expect(code).to.equal(200);
+            should().exist(data);
         })
     })
 

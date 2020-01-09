@@ -27,4 +27,8 @@ export default class Common {
         }
         return max;
     }
+
+    public static getRandomInt(max: number) {
+        return Math.floor(Math.random() * Math.floor(max));
+    }
 }
