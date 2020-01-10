@@ -3,6 +3,11 @@ export const ROLE = {
     CUSTOMER: 'customer'
 };
 
+export const TYPE = {
+    VIP : 'vip',
+    NORMAL: 'normal'
+};
+
 export const BOOKING = {
     SUCCESS : 'succcess',
     BOOKED: 'booked',

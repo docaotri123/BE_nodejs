@@ -10,7 +10,7 @@ export function checkPermission(roles?: string[]) {
             try {
                 const token = action.request.headers['token'];                
                 const decoded = jwt.verify(token, SECRET);
-
+                
                 if (!decoded.user) {
                     return new Authorizer(false, null);
                 }

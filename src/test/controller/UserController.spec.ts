@@ -57,7 +57,7 @@ describe('UserController', () => {
     describe('login API', () => {
         let user: any = {};
         beforeEach(()=>{
-            user.username = 'trido@gmail.com';
+            user.username = '324tri19cao237@gmail.com';
             user.password = 'e10adc3949ba59abbe56e057f20f883e';
         })
         it('login with username is incorrect', () => {

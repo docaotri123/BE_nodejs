@@ -22,15 +22,7 @@ export class RoomService {
     public getRoomById(roomId: number) {
         return getConnection().manager.findOne(Room, { id: roomId });
     }
-
-    public getRandomRoom() {
-        return getConnection()
-            .createQueryBuilder()
-            .select('r.id')
-            .from(Room, 'r')
-            .getOne();
-    }
-
+    
     public getRooms() {
         return getConnection().manager
             .createQueryBuilder()
@@ -98,9 +90,9 @@ export class RoomService {
     public async handleDeleteRoom(roomId: number): Promise<HandleObj> {
         try {
             const instance = RoomService.getInstance();
-            const rooms = await instance.deleteRoom(roomId);
+            await instance.deleteRoom(roomId);
             
-            return new HandleObj(true, 200, 'Delete room is successfully', rooms);
+            return new HandleObj(true, 200, 'Delete room is successfully');
         } catch(err) {
             console.log(err);
             return new HandleObj(false, 500, err);

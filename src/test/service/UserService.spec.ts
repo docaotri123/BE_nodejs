@@ -94,7 +94,7 @@ describe('UserService', () => {
         })
     })
 
-    describe('registerUser', async () => {
+    xdescribe('registerUser', async () => {
 
         const user = new UserModel();
         user.email = 'trido@gmail.com';

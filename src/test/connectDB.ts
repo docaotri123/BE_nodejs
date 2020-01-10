@@ -1,4 +1,4 @@
-import { createConnection, getConnection } from "typeorm";
+import { createConnection } from "typeorm";
 import { sqlConfig } from "../app.config";
 
 (async () => {
