@@ -56,7 +56,8 @@ export class RoomService {
         try {
             const instance = RoomService.getInstance();
             const rooms = await instance.getRooms();
-            return new HandleObj(false, 200, 'get list rooms successfully', rooms);
+
+            return new HandleObj(true, 200, 'get list rooms successfully', rooms);
         } catch(err) {
             console.log(err);
             return new HandleObj(false, 500, err);
@@ -68,19 +69,19 @@ export class RoomService {
             const instance = RoomService.getInstance();
             const typeInstance = TypeService.getInstance();
 
-            const rooms = await instance.getRooms();
             const room = new Room();
             const type = await typeInstance.getTypeByType(roomModel.type);
             room.description = roomModel.description;
             room.imageURL = roomModel.image;
             room.quality = roomModel.quality;
             room.price = roomModel.price;
+            room.type = type;
             if (!type) {
-                return new HandleObj(false, 400, 'Type room is not exits');
+                return new HandleObj(false, 402, 'Type room is not exits');
             }
             await instance.insertRoom(room);
 
-            return new HandleObj(false, 200, 'Insert room is successfully', rooms);
+            return new HandleObj(true, 201, 'Insert room is successfully');
         } catch(err) {
             console.log(err);
             return new HandleObj(false, 500, err);

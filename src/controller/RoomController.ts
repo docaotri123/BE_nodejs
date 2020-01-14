@@ -13,9 +13,9 @@ export class RoomController {
 
     @Get('/rooms')
     async ListRoom(
-        @checkPermission([ROLE.ADMIN]) permission: PermissionModel) {
+        @checkPermission([ROLE.ADMIN]) permission: PermissionModel) {        
         const allow = Common.getPermission(permission);
-
+        
         if(!allow.status) {
             return new ResponseObj(allow.code, allow.mess);
         }
@@ -41,24 +41,13 @@ export class RoomController {
         }
 
         const roomInstance = RoomService.getInstance();
-        const { status, code, mess, data } = await roomInstance.handleInsertRoom(roomModel);
+        const { status, code, mess } = await roomInstance.handleInsertRoom(roomModel);
 
         if (!status) {
             return new ResponseObj(code, mess);
         }
 
-        return new ResponseObj(code, mess, data);
-    }
-
-    @Put('/room/:id')
-    async EditRoom(
-        @checkPermission([ROLE.ADMIN]) permission: PermissionModel
-    ) {
-        const allow = Common.getPermission(permission);
-
-        if (!allow.status) {
-            return new ResponseObj(allow.code, allow.mess);
-        }
+        return new ResponseObj(code, mess);
     }
 
     @Delete('/room/:id')
@@ -73,13 +62,13 @@ export class RoomController {
         }
 
         const roomInstance = RoomService.getInstance();
-        const { status, code, mess, data } = await roomInstance.deleteRoom(id);
+        const { status, code, mess } = await roomInstance.handleDeleteRoom(id);
 
         if (!status) {
             return new ResponseObj(code, mess);
         }
 
-        return new ResponseObj(code, mess, data);
+        return new ResponseObj(code, mess);
     }
 
 }

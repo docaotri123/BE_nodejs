@@ -28,7 +28,7 @@ export class UserService {
             const instance = UserService.getInstance();
             const email = await instance.getUserByEmail(user.email);
             if (email) {
-                return new HandleObj(false, 400, 'Email has exists');
+                return new HandleObj(false, 402, 'Email has exists');
             }
 
             await instance.insertUser(user);
