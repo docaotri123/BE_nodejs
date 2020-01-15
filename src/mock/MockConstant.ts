@@ -1,6 +1,6 @@
 import { BookRoom } from "../entity/BookRoom"
 import { MomentDateTime } from "../util/DateTimeUTC"
-import { GroupBookingService } from "../service/GroupBookingService"
+import { GroupBookingRepository } from "../repository/GroupRepository"
 import { RoomService } from "../service/RoomService"
 
 export const arrDate = [{

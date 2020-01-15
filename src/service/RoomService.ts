@@ -3,7 +3,7 @@ import { Room } from "../entity/Room";
 import { BookRoom } from "../entity/BookRoom";
 import { HandleObj } from "../model/HandleModel";
 import { RoomModel } from "../model/RoomModel";
-import { TypeService } from "./TypeService";
+import { TypeRepository } from "../repository/TypeRepository";
 
 export class RoomService {
 
@@ -17,39 +17,6 @@ export class RoomService {
         }
 
         return RoomService.instance;
-    }
-
-    public getRoomById(roomId: number) {
-        return getConnection().manager.findOne(Room, { id: roomId });
-    }
-    
-    public getRooms() {
-        return getConnection().manager
-            .createQueryBuilder()
-            .select('r')
-            .from(Room, 'r')
-            .leftJoinAndMapOne('r.type', 'type', 't', 't.id = r.type')
-            .where('isDeleted = :isDeleted', { isDeleted: false })
-            .getMany();
-    }
-
-    public getRoomsNotBooking(rooms: Room[], booksByTime: BookRoom[]) {
-        return rooms.filter(room => {
-            return !booksByTime.find(book => book.room.id === room.id);
-        });
-    }
-
-    public insertRoom(room: Room): Promise<any> {
-        return getConnection().manager.save(room);
-    }
-
-    public deleteRoom(roomId: number): Promise<any> {
-        return getConnection()
-            .createQueryBuilder()
-            .update(Room)
-            .set({ isDeleted: true })
-            .where('id = :id', { id: roomId })
-            .execute();
     }
 
     public async handleGetRooms(): Promise<HandleObj> {
@@ -67,7 +34,7 @@ export class RoomService {
     public async handleInsertRoom(roomModel: RoomModel): Promise<HandleObj> {
         try {
             const instance = RoomService.getInstance();
-            const typeInstance = TypeService.getInstance();
+            const typeInstance = TypeRepository.getInstance();
 
             const room = new Room();
             const type = await typeInstance.getTypeByType(roomModel.type);

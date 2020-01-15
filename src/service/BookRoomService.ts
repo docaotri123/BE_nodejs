@@ -2,16 +2,19 @@ import { getConnection } from "typeorm";
 import { MomentDateTime } from "../util/DateTimeUTC";
 import { BookRoom } from "../entity/BookRoom";
 import { BookingQueueModel } from "../model/BookingQueue";
-import { TempBookingService } from "./TempBookingService";
-import { GroupBookingService } from "./GroupBookingService";
-import { RoomService } from "./RoomService";
+import { TempBookingRepository } from "../repository/TempBookingRepository";
+import { GroupBookingRepository } from "../repository/GroupRepository";
 import { BookRoomModel } from "../model/BookRoomModel";
 import { GroupBooking } from "../entity/GroupBooking";
-import { UserService } from "./UserService";
 import { TempBookRoom } from "../entity/TempBookRoom";
 import { startPublisher } from "../job_queue/publisher";
 import { HandleObj } from "../model/HandleModel";
+import { UserRepository } from "../repository/UserRepository";
+import { EntityMap } from "../map/EntityMap";
+import { RoomRepository } from "../repository/RoomRepository";
+import { BookRoomRepository } from "../repository/BookRoomRepository";
 import Common from "../util/Common";
+
 
 export class BookRoomService {
 
@@ -31,10 +34,10 @@ export class BookRoomService {
         const connection = getConnection();
         const transaction = connection.createQueryRunner();
         try {
-            const userInstance = UserService.getInstance();
-            const roomInstance = RoomService.getInstance();
+            const userRepo = UserRepository.getInstance();
+            const roomRepo = RoomRepository.getInstance();
              // create group
-             const user = await userInstance.getUserById(bookings[0].userId);
+             const user = await userRepo.getUserById(bookings[0].userId);
              const min = Common.minStartDate(bookings).startDate;
              const max = Common.maxEndDate(bookings).endDate;
 
@@ -50,9 +53,9 @@ export class BookRoomService {
              const temps = [];
              for (let i = 0; i < length; i++) {
                  const booking = bookings[i];
-                 const room = await roomInstance.getRoomById(booking.roomID);
+                 const room = await roomRepo.getRoomById(booking.roomID);
                  const tempBooking = new TempBookRoom();
-                 TempBookingService.mapTempBookingEntity(tempBooking, booking, groupResult, room);
+                 EntityMap.mapTempBookingEntity(tempBooking, booking, groupResult, room);
                  const tempResult = await transaction.manager.save(tempBooking);
                  temps.push(tempResult.id);
              }
@@ -71,22 +74,23 @@ export class BookRoomService {
         }
     }
 
-    public async getStatusBookings(userId: string) {
+    public async handleGetStatusBookings(userId: string) {
         try {
-            const userInstance = UserService.getInstance();
-            const user = await userInstance.getUserById(userId);
+            const userRepo = UserRepository.getInstance();
+            const tempRepo = TempBookingRepository.getInstance();
+            const user = await userRepo.getUserById(userId);
 
             if (!user) {
                 return new HandleObj(false, 402, 'User not found');
             }
 
-            const groups = await GroupBookingService.getGroupBookingByUser(userId);
+            const groups = await GroupBookingRepository.getGroupBookingByUser(userId);
             const length = groups.length;
             const results = [];
 
             for (let i = 0; i < length; i++) {
                 const group = groups[i];
-                const temps = await TempBookingService.getStatusTempBookingByGroup(group);
+                const temps = await tempRepo.getStatusTempBookingByGroup(group);
                 results.push(temps);
             }
 
@@ -97,14 +101,14 @@ export class BookRoomService {
         }
     }
 
-    public async getAvailableRoomsByDay(timestamp: number) {
-        const instance = BookRoomService.getInstance();
-        const roomInstance = RoomService.getInstance();
+    public async handleGetAvailableRoomsByDay(timestamp: number) {
+        const bookingRepo = BookRoomRepository.getInstance();
+        const roomRepo = RoomRepository.getInstance();
         try {
             const startDay = MomentDateTime.startSpecificDayUtc(timestamp);
-            const rooms = await roomInstance.getRooms();
-            const booksByDay = await instance.getBookingByDays(startDay);
-            const results = roomInstance.getRoomsNotBooking(rooms, booksByDay);
+            const rooms = await roomRepo.getRooms();
+            const booksByDay = await bookingRepo.getBookingByDays(startDay);
+            const results = roomRepo.getRoomsNotBooking(rooms, booksByDay);
             return new HandleObj(true, 200, 'get available is successfully', results);
         } catch(err) {
             console.log(err);
@@ -113,14 +117,15 @@ export class BookRoomService {
     }
 
     public async getAvailableRoomsByTime(body) {
-        const instance = BookRoomService.getInstance();
-        const roomInstance = RoomService.getInstance();
+        const bookingRepo = BookRoomRepository.getInstance();
+        const roomRepo = RoomRepository.getInstance();
         try {
             const startTime = MomentDateTime.getDateUtc(body.startTime);
             const endTime = MomentDateTime.getDateUtc(body.endTime);
-            const rooms = await roomInstance.getRooms();
-            const booksByTime = await instance.getBookingByTimes(startTime, endTime);
-            const results = roomInstance.getRoomsNotBooking(rooms, booksByTime);
+            const rooms = await roomRepo.getRooms();
+            const booksByTime = await bookingRepo.getBookingByTimes(startTime, endTime);
+            const results = roomRepo.getRoomsNotBooking(rooms, booksByTime);
+
             return new HandleObj(true, 200, 'get available is successfully', results);
         } catch(err) {
             console.log(err);
@@ -128,7 +133,7 @@ export class BookRoomService {
         }
     }
 
-    public async cancelBookingById(bookingId: number) {
+    public async handleCancelBookingById(bookingId: number) {
         try {
             await getConnection()
                 .createQueryBuilder()
@@ -141,68 +146,6 @@ export class BookRoomService {
             console.log(err);
             return new HandleObj(false, err);
         }
-    }
-
-    public async checkStartGreaterToday(bookingId: number) {
-        const instance = BookRoomService.getInstance();
-        try {
-            const room = await instance.getBookingById(bookingId);
-            const today = MomentDateTime.getCurrentDate();
-            return today >= room.startDate
-        } catch(err) {
-            return false;
-        }
-    }
-
-    public getRandomBooking() {
-        return getConnection().createQueryBuilder()
-            .select('br.id')
-            .from(BookRoom, 'br')
-            .where('isCancelled = :isCancelled', {isCancelled: false})
-            .getOne();
-    }
-
-    public getBookingById(bookingId: number) {
-        return getConnection().manager.findOne(BookRoom, {id: bookingId, isCancelled: false});
-    }
-
-    public getBookingByRoomIdAndStartDate(roomID: number, startDate: number) {
-        const _startDate = MomentDateTime.getDateUtc(startDate);
-        return getConnection()
-            .createQueryBuilder()
-            .select('br.id')
-            .from(BookRoom, 'br')
-            .where('br.roomId = :roomId AND br.startDate <= :startDate AND br.endDate >= :startDate')
-            .setParameters({ roomId: roomID, startDate: _startDate })
-            .getOne();
-    }
-
-    public getBookingByTimes(startDate: Date, endDate: Date) {
-        return getConnection().createQueryBuilder()
-            .select('br')
-            .from(BookRoom, 'br')
-            .where(`br.startDate >= :startTime AND br.startDate <= :endTime
-                OR br.startDate <= :startTime AND br.endDate >= :endTime
-                OR br.endDate >= :startTime AND br.endDate <= :endTime
-                OR br.startDate >= :startTime AND br.endDate <= :endTime
-                AND isCancelled = :isCancelled`)
-            .leftJoinAndMapOne('br.room', 'Room', 'r', 'r.id = br.roomId')
-            .setParameters({ startTime: startDate, endTime: endDate, isCancelled: false })
-            .getMany();
-    }
-
-    public getBookingByDays(startDate: Date) {
-        return getConnection().createQueryBuilder()
-            .select('br')
-            .from(BookRoom, 'br')
-            .where('br.startDate <= :startDay AND br.endDate >= :startDay AND isCancelled = :isCancelled')
-            .leftJoinAndMapOne('br.room', 'Room', 'r', 'r.id = br.roomId')
-            .setParameters({ startDay: startDate, isCancelled: false })
-            .getMany();
-    }
-
-    public insertBookingRoom(booking: BookRoom) {
-        return getConnection().manager.save(booking);
     }
 
 }

@@ -6,25 +6,30 @@ import { Room } from "../entity/Room";
 import { MomentDateTime } from "../util/DateTimeUTC";
 import { BOOKING } from "../constant";
 
-export class TempBookingService {
-    public static updateStatusTempBooking(tempId: number, status: string) {
-        return getConnection().createQueryBuilder()
+export class TempBookingRepository {
+
+    private static instance: TempBookingRepository;
+
+    private constructor() { }
+
+    public static getInstance(): TempBookingRepository {
+        if (!TempBookingRepository.instance) {
+            TempBookingRepository.instance = new TempBookingRepository();
+        }
+
+        return TempBookingRepository.instance;
+    }
+
+    public updateStatusTempBooking(tempId: number, status: string) {
+        return getConnection()
+            .createQueryBuilder()
             .update(TempBookRoom)
             .set({ status: status })
             .where('id = :tempBookingId', { tempBookingId: tempId })
             .execute();
     }
 
-    public static mapTempBookingEntity(resource: TempBookRoom , des: BookRoomModel, group: GroupBooking, room: Room) {
-        resource.startDate = MomentDateTime.getDateUtc(des.startDate);
-        resource.endDate = MomentDateTime.getDateUtc(des.endDate);
-        resource.status = BOOKING.PENDING;
-        resource.group = group;
-        resource.room = room;
-        return resource;
-    }
-
-    public static getStatusTempBookingByGroup(group: GroupBooking) {
+    public getStatusTempBookingByGroup(group: GroupBooking) {
         return getConnection()
             .createQueryBuilder()
             .select('t')

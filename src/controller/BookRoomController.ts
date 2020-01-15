@@ -21,7 +21,7 @@ export class BookRoomController {
         }
 
         const bookingInstance = BookRoomService.getInstance();
-        const { status, code, mess, data } = await bookingInstance.getStatusBookings(body.userId);
+        const { status, code, mess, data } = await bookingInstance.handleGetStatusBookings(body.userId);
 
         if (!status) {
             return new ResponseObj(code, mess);
@@ -33,7 +33,7 @@ export class BookRoomController {
     @Post('/availableroomsday')
     async getAvailableRoom(@Body() body: any) {
         const bookingInstance = BookRoomService.getInstance();
-        const { status, code, mess, data } = await bookingInstance.getStatusBookings(body.time);
+        const { status, code, mess, data } = await bookingInstance.handleGetStatusBookings(body.time);
 
         if (!status) {
             return new ResponseObj(code, mess);
@@ -73,26 +73,13 @@ export class BookRoomController {
         }
 
         const bookingInstance = BookRoomService.getInstance();
-        const { status, code, mess } = await bookingInstance.cancelBookingById(bookingId);
+        const { status, code, mess } = await bookingInstance.handleCancelBookingById(bookingId);
 
         if (!status) {
             return new ResponseObj(code, mess);
         }
 
         return new ResponseObj(code, mess);
-    }
-
-    @Put('/editbooking/:id')
-    async editBooking(
-        @Param('id') idBooking: number,
-        @checkPermission([ROLE.ADMIN, ROLE.CUSTOMER]) permission) {
-        const allow = Common.getPermission(permission);
-
-        if (!allow.status) {
-            return new ResponseObj(allow.code, allow.mess);
-        }
-
-        return new ResponseObj(200, '');
     }
 
     @Post('/availableroomstime')

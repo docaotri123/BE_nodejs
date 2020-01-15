@@ -2,7 +2,7 @@ import { createParamDecorator } from 'routing-controllers';
 import * as jwt from 'jsonwebtoken';
 import { SECRET } from '../app.config';
 import { Authorizer } from '../model/AuthorizerRes';
-import { RoleService } from '../service/RoleService';
+import { RoleRepository } from '../repository/RoleRepository';
 
 export function checkPermission(roles?: string[]) {
     return createParamDecorator({
@@ -11,7 +11,7 @@ export function checkPermission(roles?: string[]) {
             try {
                 const token = action.request.headers['token'];                
                 const decoded = jwt.verify(token, SECRET);
-                const roleInstance = RoleService.getInstance();
+                const roleInstance = RoleRepository.getInstance();
 
                 if (!decoded.user) {
                     return new Authorizer(false, null);

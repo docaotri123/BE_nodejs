@@ -7,6 +7,9 @@ import { HASH_STR, ROLE } from "../constant";
 import { Role } from "../entity/Role";
 import * as jwt from 'jsonwebtoken';
 import { SECRET } from "../app.config";
+import { UserRepository } from "../repository/UserRepository";
+import { EntityMap } from "../map/EntityMap";
+import { RoleRepository } from "../repository/RoleRepository";
 
 export class UserService {
 
@@ -22,16 +25,22 @@ export class UserService {
         return UserService.instance;
     }
 
-    public async registerUser(user: UserModel): Promise<HandleObj> {
+    public async registerUser(userModel: UserModel): Promise<HandleObj> {
         try {
             // check unique user
-            const instance = UserService.getInstance();
-            const email = await instance.getUserByEmail(user.email);
+            const userRepo = UserRepository.getInstance();
+            const roleRepo = RoleRepository.getInstance();
+
+            const email = await userRepo.getUserByEmail(userModel.email);
             if (email) {
                 return new HandleObj(false, 402, 'Email has exists');
             }
-
-            await instance.insertUser(user);
+            
+            const user = new User();
+            const role = await roleRepo.getRoleByRole(ROLE.CUSTOMER);
+            EntityMap.mapUser(user, userModel, role);
+            
+            await userRepo.insertUser(user);
 
             return new HandleObj(true, 201, 'Register is successfully');
         } catch (err) {
@@ -42,14 +51,14 @@ export class UserService {
 
     public async handleLogin(username: string, password: string | Int32Array): Promise<HandleObj> {
         try {
-            const instance = UserService.getInstance();
-            const user = await instance.getUserByEmail(username);
+            const userRepo = UserRepository.getInstance();
+            const user = await userRepo.getUserByEmail(username);
 
             if (!user) {
                 return new HandleObj(false, 400, 'username incorrect');
             }
 
-            const checkPassword = await instance.getUserByEmailAndPassword(username, password);
+            const checkPassword = await userRepo.getUserByEmailAndPassword(username, password);
 
             if (!checkPassword) {
                 return new HandleObj(false, 401, 'password incorrect');
@@ -64,42 +73,6 @@ export class UserService {
         }
     }
 
-    public getUserByEmail(email: string): Promise<User> {
-        return getConnection().manager.findOne(User, { email: email });
-    }
-
-    public getUserByEmailAndPassword(username: string, password: string | Int32Array): Promise<User> {
-        return getConnection()
-            .createQueryBuilder()
-            .select('u.id')
-            .addSelect('u.email')
-            .from(User, 'u')
-            .leftJoinAndMapOne('u.role', 'role', 'r', 'u.role = r.id')
-            .where('u.email = :email AND u.password = :password',
-                { email: username, password: password })
-            .getOne();
-    }
-
-    public getUserById(userId: string): Promise<User> {
-        return getConnection().manager.findOne(User, { id: userId });
-    }
-
-    public getRandomUser(): Promise<User> {
-        return getConnection().createQueryBuilder()
-            .select('u.id')
-            .from(User, 'u')
-            .getOne();
-    }
-
-    public async insertUser(user: UserModel): Promise<any> {
-        // save user with role (customer)
-        const userEntity = new User();
-        userEntity.email = user.email;
-        userEntity.phone = user.phone;
-        userEntity.password = Md5.hashStr(user.password + HASH_STR);
-        userEntity.role = await getConnection().manager.findOne(Role, { role: ROLE.CUSTOMER });
-
-        return getConnection().manager.save(userEntity);
-    }
+ 
 
 }
