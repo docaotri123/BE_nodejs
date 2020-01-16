@@ -1,15 +1,13 @@
-import { getConnection } from "typeorm";
 import { User } from "../entity/User";
 import { UserModel } from "../model/UserModel";
 import { HandleObj } from "../model/HandleModel";
-import { Md5 } from "ts-md5";
-import { HASH_STR, ROLE } from "../constant";
-import { Role } from "../entity/Role";
+import { ROLE } from "../constant";
 import * as jwt from 'jsonwebtoken';
 import { SECRET } from "../app.config";
 import { UserRepository } from "../repository/UserRepository";
 import { EntityMap } from "../map/EntityMap";
 import { RoleRepository } from "../repository/RoleRepository";
+import * as bcrypt from 'bcrypt';
 
 export class UserService {
 
@@ -58,7 +56,7 @@ export class UserService {
                 return new HandleObj(false, 400, 'username incorrect');
             }
 
-            const checkPassword = await userRepo.getUserByEmailAndPassword(username, password);
+            const checkPassword = bcrypt.compareSync(password, user.password)
 
             if (!checkPassword) {
                 return new HandleObj(false, 401, 'password incorrect');
@@ -72,7 +70,5 @@ export class UserService {
             return new HandleObj(false, 500, err);
         }
     }
-
- 
 
 }

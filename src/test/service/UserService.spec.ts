@@ -1,43 +1,14 @@
 import { expect, should } from 'chai';
 import 'mocha';
-import { Md5 } from "ts-md5";
-import { HASH_STR, ROLE } from '../../constant'
 import { UserService } from '../../service/UserService';
 import { UserRepository } from '../../repository/UserRepository';
 import { UserModel } from '../../model/UserModel';
 import Common from '../../util/Common';
-import { before } from 'mocha';
 
 
 describe('UserService', () => {
     const userRepo = UserRepository.getInstance();
     const userService = UserService.getInstance();
-
-
-    describe('getUserByEmailAndPassword', () => {
-        let email, password , email_not_exist;
-
-        before(()=>{
-            email = 'trido@gmail.com';
-            password = Md5.hashStr('e10adc3949ba59abbe56e057f20f883e' + HASH_STR);
-            email_not_exist = 'trinot@gmail.com'
-        })
-
-        it('check username is incorrect', async () => {
-            const user = await userRepo.getUserByEmailAndPassword(email_not_exist, password);
-            should().not.exist(user);
-        })
-
-        it('check username is correct and password is incorrect', async () => {
-            const checkPass = await userRepo.getUserByEmailAndPassword(email, '....');
-            should().not.exist(checkPass);
-        })
-
-        it('check username and password is correct', async () => {
-            const user = await userRepo.getUserByEmailAndPassword(email, password)
-            expect(user.email).to.equal(email);
-        })
-    })
 
     describe('getUserByEmail', () => {
         it('check get user is not null',async () => {
@@ -127,7 +98,7 @@ describe('UserService', () => {
     
     describe('handleLogin', () => {
         const username = 'trido@gmail.com'
-        const password = Md5.hashStr('e10adc3949ba59abbe56e057f20f883e' + HASH_STR);
+        const password = '';
 
         it('handleLogin username is incorrect', async () => {
             const handle = await userService.handleLogin(username +'.', password);

@@ -4,6 +4,7 @@ import { BookRoom } from "../entity/BookRoom";
 import { HandleObj } from "../model/HandleModel";
 import { RoomModel } from "../model/RoomModel";
 import { TypeRepository } from "../repository/TypeRepository";
+import { RoomRepository } from "../repository/RoomRepository";
 
 export class RoomService {
 
@@ -21,8 +22,8 @@ export class RoomService {
 
     public async handleGetRooms(): Promise<HandleObj> {
         try {
-            const instance = RoomService.getInstance();
-            const rooms = await instance.getRooms();
+            const roomRepo = RoomRepository.getInstance();
+            const rooms = await roomRepo.getRooms();
 
             return new HandleObj(true, 200, 'get list rooms successfully', rooms);
         } catch(err) {
@@ -33,7 +34,7 @@ export class RoomService {
 
     public async handleInsertRoom(roomModel: RoomModel): Promise<HandleObj> {
         try {
-            const instance = RoomService.getInstance();
+            const roomRepo = RoomRepository.getInstance();
             const typeInstance = TypeRepository.getInstance();
 
             const room = new Room();
@@ -46,7 +47,7 @@ export class RoomService {
             if (!type) {
                 return new HandleObj(false, 402, 'Type room is not exits');
             }
-            await instance.insertRoom(room);
+            await roomRepo.insertRoom(room);
 
             return new HandleObj(true, 201, 'Insert room is successfully');
         } catch(err) {
@@ -57,8 +58,8 @@ export class RoomService {
 
     public async handleDeleteRoom(roomId: number): Promise<HandleObj> {
         try {
-            const instance = RoomService.getInstance();
-            await instance.deleteRoom(roomId);
+            const roomRepo = RoomRepository.getInstance();
+            await roomRepo.deleteRoom(roomId);
             
             return new HandleObj(true, 200, 'Delete room is successfully');
         } catch(err) {

@@ -15,7 +15,7 @@ export class User {
     @Column({nullable: false})
     phone: string;
 
-    @Column('text', {select: false})
+    @Column('text',)
     password: any;
 
     @ManyToOne(type => Role, role => role.id, {nullable: false})
