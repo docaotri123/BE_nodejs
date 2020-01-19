@@ -2,7 +2,7 @@ import { createParamDecorator } from 'routing-controllers';
 import * as jwt from 'jsonwebtoken';
 import { SECRET } from '../app.config';
 import { Authorizer } from '../model/AuthorizerRes';
-import { RoleRepository } from '../repository/role/RoleRepository';
+import { RoleRepository } from '../repository/role/RoleV1.0Repository';
 
 export function checkPermission(roles?: string[]) {
     return createParamDecorator({

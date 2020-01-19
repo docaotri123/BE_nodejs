@@ -2,17 +2,17 @@ import { getConnection } from "typeorm";
 import { MomentDateTime } from "../../util/DateTimeUTC";
 import { BookRoom } from "../../entity/BookRoom";
 import { BookingQueueModel } from "../../model/BookingQueue";
-import { TempBookingRepository } from "../../repository/temp_booking/TempBookingRepository";
-import { GroupBookingRepository } from "../../repository/group/GroupRepository";
+import { TempBookingRepository } from "../../repository/temp_booking/TempBookingV1.0Repository";
+import { GroupBookingRepository } from "../../repository/group/GroupV1.0Repository";
 import { BookRoomModel } from "../../model/BookRoomModel";
 import { GroupBooking } from "../../entity/GroupBooking";
 import { TempBookRoom } from "../../entity/TempBookRoom";
 import { startPublisher } from "../../job_queue/publisher";
 import { HandleObj } from "../../model/HandleModel";
-import { UserRepository } from "../../repository/user/UserRepository";
+import { UserRepository } from "../../repository/user/UserV1.0Repository";
 import { EntityMap } from "../../map/EntityMap";
-import { RoomRepository } from "../../repository/room/RoomRepository";
-import { BookRoomRepository } from "../../repository/book_room/BookRoomRepository";
+import { RoomRepository } from "../../repository/room/RoomV1.0Repository";
+import { BookRoomRepository } from "../../repository/book_room/BookRoomV1.0Repository";
 import Common from "../../util/Common";
 
 

@@ -2,9 +2,9 @@ import { ResponseObj } from '../../model/ResponseModel';
 import { Post, Body, JsonController } from 'routing-controllers';
 import { UserModel } from '../../model/UserModel';
 import { LoginModel } from '../../model/LoginModel';
-import { UserService } from '../../service/user/UserService';
+import { UserService } from '../../service/user/UserV1.0Service';
 
-@JsonController()
+@JsonController('/v1.0/sessions')
 export class UserController {
 
     @Post('/user')
@@ -20,7 +20,7 @@ export class UserController {
         return new ResponseObj(code, mess);
     }
 
-    @Post('/login')
+    @Post('')
     async Login(@Body() loginModel: LoginModel) {
         const userService = UserService.getInstance(); 
         const username = loginModel.username;

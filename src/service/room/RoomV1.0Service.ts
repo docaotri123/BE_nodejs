@@ -1,8 +1,8 @@
 import { Room } from "../../entity/Room";
 import { HandleObj } from "../../model/HandleModel";
 import { RoomModel } from "../../model/RoomModel";
-import { TypeRepository } from "../../repository/type/TypeRepository";
-import { RoomRepository } from "../../repository/room/RoomRepository";
+import { TypeRepository } from "../../repository/type/TypeV1.0Repository";
+import { RoomRepository } from "../../repository/room/RoomV1.0Repository";
 
 export class RoomService {
 

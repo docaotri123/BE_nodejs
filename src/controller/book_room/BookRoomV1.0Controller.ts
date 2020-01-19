@@ -3,7 +3,7 @@ import { BookRoomModel } from '../../model/BookRoomModel';
 import { ResponseObj } from '../../model/ResponseModel';
 import { checkPermission } from '../../middleware/Authorizer';
 import { ROLE } from '../../constant';
-import { BookRoomService } from '../../service/book_room/BookRoomService';
+import { BookRoomService } from '../../service/book_room/BookRoomV1.0Service';
 import Common from '../../util/Common';
 import { PermissionModel } from '../../model/PermissionModel';
 

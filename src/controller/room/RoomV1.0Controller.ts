@@ -3,7 +3,7 @@ import { ResponseObj } from '../../model/ResponseModel';
 import { checkPermission } from '../../middleware/Authorizer';
 import { ROLE } from '../../constant';
 import { RoomModel } from '../../model/RoomModel';
-import { RoomService } from '../../service/room/RoomService';
+import { RoomService } from '../../service/room/RoomV1.0Service';
 import Common from '../../util/Common';
 import { PermissionModel } from '../../model/PermissionModel';
 

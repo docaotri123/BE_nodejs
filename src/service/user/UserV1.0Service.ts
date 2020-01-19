@@ -4,9 +4,9 @@ import { HandleObj } from "../../model/HandleModel";
 import { ROLE } from "../../constant";
 import * as jwt from 'jsonwebtoken';
 import { SECRET } from "../../app.config";
-import { UserRepository } from "../../repository/user/UserRepository";
+import { UserRepository } from "../../repository/user/UserV1.0Repository";
 import { EntityMap } from "../../map/EntityMap";
-import { RoleRepository } from "../../repository/role/RoleRepository";
+import { RoleRepository } from "../../repository/role/RoleV1.0Repository";
 import * as bcrypt from 'bcrypt';
 
 export class UserService {

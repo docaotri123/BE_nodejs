@@ -49,6 +49,6 @@ export const sqlConfig_test: ConnectionOptions  = {
 export const appConfig = {
    defaultErrorHandler: false,
    cors: true,
-   controllers: [__dirname + '/controller/*.ts'],
+   controllers: [__dirname + '/controller/**/*.ts'],
    middlewares: [__dirname + '/middleware/*.ts']
 }
