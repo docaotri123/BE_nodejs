@@ -1,8 +1,8 @@
-import { ResponseObj } from '../model/ResponseModel';
+import { ResponseObj } from '../../model/ResponseModel';
 import { Post, Body, JsonController } from 'routing-controllers';
-import { UserModel } from '../model/UserModel';
-import { LoginModel } from '../model/LoginModel';
-import { UserService } from '../service/UserService';
+import { UserModel } from '../../model/UserModel';
+import { LoginModel } from '../../model/LoginModel';
+import { UserService } from '../../service/user/UserService';
 
 @JsonController()
 export class UserController {

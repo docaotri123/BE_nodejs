@@ -1,6 +1,6 @@
 import { getConnection } from "typeorm";
-import { Room } from "../entity/Room";
-import { BookRoom } from "../entity/BookRoom";
+import { Room } from "../../entity/Room";
+import { BookRoom } from "../../entity/BookRoom";
 
 export class RoomRepository {
 

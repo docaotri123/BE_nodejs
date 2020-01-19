@@ -1,4 +1,4 @@
-import { Role } from "../entity/Role";
+import { Role } from "../../entity/Role";
 import { getConnection } from "typeorm";
 
 export class RoleRepository {

@@ -1,6 +1,6 @@
 import { getConnection } from "typeorm";
-import { BookRoom } from "../entity/BookRoom";
-import { MomentDateTime } from "../util/DateTimeUTC";
+import { BookRoom } from "../../entity/BookRoom";
+import { MomentDateTime } from "../../util/DateTimeUTC";
 
 export class BookRoomRepository {
 

@@ -1,12 +1,12 @@
-import { User } from "../entity/User";
-import { UserModel } from "../model/UserModel";
-import { HandleObj } from "../model/HandleModel";
-import { ROLE } from "../constant";
+import { User } from "../../entity/User";
+import { UserModel } from "../../model/UserModel";
+import { HandleObj } from "../../model/HandleModel";
+import { ROLE } from "../../constant";
 import * as jwt from 'jsonwebtoken';
-import { SECRET } from "../app.config";
-import { UserRepository } from "../repository/UserRepository";
-import { EntityMap } from "../map/EntityMap";
-import { RoleRepository } from "../repository/RoleRepository";
+import { SECRET } from "../../app.config";
+import { UserRepository } from "../../repository/user/UserRepository";
+import { EntityMap } from "../../map/EntityMap";
+import { RoleRepository } from "../../repository/role/RoleRepository";
 import * as bcrypt from 'bcrypt';
 
 export class UserService {

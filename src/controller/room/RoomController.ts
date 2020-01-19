@@ -1,11 +1,11 @@
 import { JsonController, Get, Post, Put, Body, Param, Delete } from 'routing-controllers';
-import { ResponseObj } from '../model/ResponseModel';
-import { checkPermission } from '../middleware/Authorizer';
-import { ROLE } from '../constant';
-import { RoomModel } from '../model/RoomModel';
-import { RoomService } from '../service/RoomService';
-import Common from '../util/Common';
-import { PermissionModel } from '../model/PermissionModel';
+import { ResponseObj } from '../../model/ResponseModel';
+import { checkPermission } from '../../middleware/Authorizer';
+import { ROLE } from '../../constant';
+import { RoomModel } from '../../model/RoomModel';
+import { RoomService } from '../../service/room/RoomService';
+import Common from '../../util/Common';
+import { PermissionModel } from '../../model/PermissionModel';
 
 
 @JsonController()

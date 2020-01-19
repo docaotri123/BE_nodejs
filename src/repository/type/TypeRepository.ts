@@ -1,4 +1,4 @@
-import { Type } from "../entity/Type";
+import { Type } from "../../entity/Type";
 import { getConnection } from "typeorm";
 
 export class TypeRepository {

@@ -1,11 +1,11 @@
 import { JsonController, Body, Post, Param, Put } from 'routing-controllers';
-import { BookRoomModel } from '../model/BookRoomModel';
-import { ResponseObj } from '../model/ResponseModel';
-import { checkPermission } from '../middleware/Authorizer';
-import { ROLE } from '../constant';
-import { BookRoomService } from '../service/BookRoomService';
-import Common from '../util/Common';
-import { PermissionModel } from '../model/PermissionModel';
+import { BookRoomModel } from '../../model/BookRoomModel';
+import { ResponseObj } from '../../model/ResponseModel';
+import { checkPermission } from '../../middleware/Authorizer';
+import { ROLE } from '../../constant';
+import { BookRoomService } from '../../service/book_room/BookRoomService';
+import Common from '../../util/Common';
+import { PermissionModel } from '../../model/PermissionModel';
 
 @JsonController()
 export class BookRoomController {

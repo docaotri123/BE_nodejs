@@ -1,10 +1,10 @@
 import { getConnection } from "typeorm";
-import { TempBookRoom } from "../entity/TempBookRoom";
-import { BookRoomModel } from "../model/BookRoomModel";
-import { GroupBooking } from "../entity/GroupBooking";
-import { Room } from "../entity/Room";
-import { MomentDateTime } from "../util/DateTimeUTC";
-import { BOOKING } from "../constant";
+import { TempBookRoom } from "../../entity/TempBookRoom";
+import { BookRoomModel } from "../../model/BookRoomModel";
+import { GroupBooking } from "../../entity/GroupBooking";
+import { Room } from "../../entity/Room";
+import { MomentDateTime } from "../../util/DateTimeUTC";
+import { BOOKING } from "../../constant";
 
 export class TempBookingRepository {
 

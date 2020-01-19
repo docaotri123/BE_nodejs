@@ -1,6 +1,6 @@
-import { GroupBooking } from "../entity/GroupBooking";
+import { GroupBooking } from "../../entity/GroupBooking";
 import { getConnection } from "typeorm";
-import { MomentDateTime } from "../util/DateTimeUTC";
+import { MomentDateTime } from "../../util/DateTimeUTC";
 
 export class GroupBookingRepository {
     public static getGroupById(groupId: number) {

@@ -1,10 +1,8 @@
-import { getConnection } from "typeorm";
-import { Room } from "../entity/Room";
-import { BookRoom } from "../entity/BookRoom";
-import { HandleObj } from "../model/HandleModel";
-import { RoomModel } from "../model/RoomModel";
-import { TypeRepository } from "../repository/TypeRepository";
-import { RoomRepository } from "../repository/RoomRepository";
+import { Room } from "../../entity/Room";
+import { HandleObj } from "../../model/HandleModel";
+import { RoomModel } from "../../model/RoomModel";
+import { TypeRepository } from "../../repository/type/TypeRepository";
+import { RoomRepository } from "../../repository/room/RoomRepository";
 
 export class RoomService {
 
