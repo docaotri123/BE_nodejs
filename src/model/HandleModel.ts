@@ -1,13 +1,15 @@
+import { ErrorMessage } from "./ErrorMessageModel";
+
 export class HandleObj {
-    status: boolean;
     code: number;
     mess: any;
+    error: ErrorMessage;
     data: any;
 
-    constructor(status: boolean, code: number, mess?: any, data?: any) {
-        this.status = status;
+    constructor(code: number, mess: string, error?: ErrorMessage ,data?: any) {
         this.code = code;
         this.mess = mess;
+        this.error = error;
         this.data = data;
     }
 }

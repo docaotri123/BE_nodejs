@@ -1,8 +1,8 @@
 import { Room } from "../../entity/Room";
 import { HandleObj } from "../../model/HandleModel";
 import { RoomModel } from "../../model/RoomModel";
-import { TypeRepository } from "../../repository/type/TypeV1.0Repository";
-import { RoomRepository } from "../../repository/room/RoomV1.0Repository";
+import { TypeRepository } from "../../repository/v1.0/TypeRepository";
+import { RoomRepository } from "../../repository/v1.0/RoomRepository";
 
 export class RoomService {
 
@@ -23,10 +23,10 @@ export class RoomService {
             const roomRepo = RoomRepository.getInstance();
             const rooms = await roomRepo.getRooms();
 
-            return new HandleObj(true, 200, 'get list rooms successfully', rooms);
+            return new HandleObj(200, 'get list rooms successfully', null ,rooms);
         } catch(err) {
             console.log(err);
-            return new HandleObj(false, 500, err);
+            return new HandleObj(500, err);
         }
     }
 
@@ -43,14 +43,14 @@ export class RoomService {
             room.price = roomModel.price;
             room.type = type;
             if (!type) {
-                return new HandleObj(false, 402, 'Type room is not exits');
+                return new HandleObj(402, 'Type room is not exits');
             }
             await roomRepo.insertRoom(room);
 
-            return new HandleObj(true, 201, 'Insert room is successfully');
+            return new HandleObj(201, 'Insert room is successfully');
         } catch(err) {
             console.log(err);
-            return new HandleObj(false, 500, err);
+            return new HandleObj(500, err);
         }
     }
 
@@ -59,10 +59,10 @@ export class RoomService {
             const roomRepo = RoomRepository.getInstance();
             await roomRepo.deleteRoom(roomId);
             
-            return new HandleObj(true, 200, 'Delete room is successfully');
+            return new HandleObj(200, 'Delete room is successfully');
         } catch(err) {
             console.log(err);
-            return new HandleObj(false, 500, err);
+            return new HandleObj(500, err);
         }
     }
 

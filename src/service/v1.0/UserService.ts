@@ -1,13 +1,14 @@
 import { User } from "../../entity/User";
 import { UserModel } from "../../model/UserModel";
 import { HandleObj } from "../../model/HandleModel";
-import { ROLE } from "../../constant";
+import { ROLE, HttpStatus, User_Status, Server_Status } from "../../constant";
 import * as jwt from 'jsonwebtoken';
 import { SECRET } from "../../app.config";
-import { UserRepository } from "../../repository/user/UserV1.0Repository";
+import { UserRepository } from "../../repository/v1.0/UserRepository";
 import { EntityMap } from "../../map/EntityMap";
-import { RoleRepository } from "../../repository/role/RoleV1.0Repository";
+import { RoleRepository } from "../../repository/v1.0/RoleRepository";
 import * as bcrypt from 'bcrypt';
+import { ErrorMessage } from "../../model/ErrorMessageModel";
 
 export class UserService {
 
@@ -31,7 +32,9 @@ export class UserService {
 
             const email = await userRepo.getUserByEmail(userModel.email);
             if (email) {
-                return new HandleObj(false, 402, 'Email has exists');
+                const exists = User_Status.EmailExists;
+                const error = new ErrorMessage(exists.mess, '', exists.code);
+                return new HandleObj( HttpStatus.BadRequest, '', error);
             }
             
             const user = new User();
@@ -40,34 +43,40 @@ export class UserService {
             
             await userRepo.insertUser(user);
 
-            return new HandleObj(true, 201, 'Register is successfully');
+            return new HandleObj(HttpStatus.Created, User_Status.RegisterSuccess.mess);
         } catch (err) {
             console.log(err);
-            return new HandleObj(false, 500, err);
+            const server = Server_Status.error;
+            const error = new ErrorMessage(server.mess, err.message, server.code);
+            return new HandleObj(HttpStatus.InternalServerError, '' ,error);
         }
     }
 
-    public async handleLogin(username: string, password: string | Int32Array): Promise<HandleObj> {
+    public async handleLogin(username: string, password: string): Promise<HandleObj> {
         try {
             const userRepo = UserRepository.getInstance();
             const user = await userRepo.getUserByEmail(username);
+            const invalid = User_Status.InvalidCredentials;
 
             if (!user) {
-                return new HandleObj(false, 400, 'username incorrect');
+                const error = new ErrorMessage(invalid.mess, '', invalid.code);
+                return new HandleObj(HttpStatus.BadRequest, '', error);
             }
-
             const checkPassword = bcrypt.compareSync(password, user.password)
 
             if (!checkPassword) {
-                return new HandleObj(false, 401, 'password incorrect');
+                const error = new ErrorMessage(invalid.mess, '', invalid.code);
+                return new HandleObj(HttpStatus.BadRequest, '', error);
             }
 
             const token = jwt.sign({ user: user }, SECRET, {expiresIn: '24h'});
 
-            return new HandleObj(true, 200, 'Login Succsessfully',{token: token});
+            return new HandleObj(HttpStatus.Ok, User_Status.LoginSuccess.mess, null ,{token: token});
         } catch(err) {
             console.log(err);
-            return new HandleObj(false, 500, err);
+            const server = Server_Status.error;
+            const error = new ErrorMessage(server.mess, err.message, server.code);
+            return new HandleObj(HttpStatus.InternalServerError, '' ,error);
         }
     }
 

@@ -2,18 +2,20 @@ import { getConnection } from "typeorm";
 import { MomentDateTime } from "../../util/DateTimeUTC";
 import { BookRoom } from "../../entity/BookRoom";
 import { BookingQueueModel } from "../../model/BookingQueue";
-import { TempBookingRepository } from "../../repository/temp_booking/TempBookingV1.0Repository";
-import { GroupBookingRepository } from "../../repository/group/GroupV1.0Repository";
+import { TempBookingRepository } from "../../repository/v1.0/TempBookingRepository";
+import { GroupBookingRepository } from "../../repository/v1.0/GroupRepository";
 import { BookRoomModel } from "../../model/BookRoomModel";
 import { GroupBooking } from "../../entity/GroupBooking";
 import { TempBookRoom } from "../../entity/TempBookRoom";
 import { startPublisher } from "../../job_queue/publisher";
 import { HandleObj } from "../../model/HandleModel";
-import { UserRepository } from "../../repository/user/UserV1.0Repository";
+import { UserRepository } from "../../repository/v1.0/UserRepository";
 import { EntityMap } from "../../map/EntityMap";
-import { RoomRepository } from "../../repository/room/RoomV1.0Repository";
-import { BookRoomRepository } from "../../repository/book_room/BookRoomV1.0Repository";
+import { RoomRepository } from "../../repository/v1.0/RoomRepository";
+import { BookRoomRepository } from "../../repository/v1.0/BookRoomRepository";
 import Common from "../../util/Common";
+import { ErrorMessage } from "../../model/ErrorMessageModel";
+import { HttpStatus } from "../../constant";
 
 
 export class BookRoomService {
@@ -66,11 +68,12 @@ export class BookRoomService {
              const itemQueue = new BookingQueueModel(bookings, groupResult.id, temps);
              await startPublisher(itemQueue);
 
-            return new HandleObj(true, 201,'bookings is pending');
+            return new HandleObj(201,'bookings is pending');
         } catch (err) {
-            console.log(err);
             await transaction.rollbackTransaction();
-            return new HandleObj(false, err);
+            console.log(err);
+            const error = new ErrorMessage('', err.message, '');
+            return new HandleObj(HttpStatus.InternalServerError, '' ,error);
         }
     }
 
@@ -81,7 +84,7 @@ export class BookRoomService {
             const user = await userRepo.getUserById(userId);
 
             if (!user) {
-                return new HandleObj(false, 402, 'User not found');
+                return new HandleObj(402, 'User not found');
             }
 
             const groups = await GroupBookingRepository.getGroupBookingByUser(userId);
@@ -94,10 +97,11 @@ export class BookRoomService {
                 results.push(temps);
             }
 
-            return new HandleObj(true, 200, 'get status booking', results);
+            return new HandleObj(200, 'get status booking', null , results);
         } catch (err) {
             console.log(err);
-            return new HandleObj(false, err);
+            const error = new ErrorMessage('', err.message, '');
+            return new HandleObj(HttpStatus.InternalServerError, '' ,error);
         }
     }
 
@@ -109,10 +113,11 @@ export class BookRoomService {
             const rooms = await roomRepo.getRooms();
             const booksByDay = await bookingRepo.getBookingByDays(startDay);
             const results = roomRepo.getRoomsNotBooking(rooms, booksByDay);
-            return new HandleObj(true, 200, 'get available is successfully', results);
+            return new HandleObj(200, 'get available is successfully', null ,results);
         } catch(err) {
             console.log(err);
-            return new HandleObj(false, err);
+            const error = new ErrorMessage('', err.message, '');
+            return new HandleObj(HttpStatus.InternalServerError, '' ,error);
         }
     }
 
@@ -126,10 +131,11 @@ export class BookRoomService {
             const booksByTime = await bookingRepo.getBookingByTimes(startTime, endTime);
             const results = roomRepo.getRoomsNotBooking(rooms, booksByTime);
 
-            return new HandleObj(true, 200, 'get available is successfully', results);
+            return new HandleObj(200, 'get available is successfully', null , results);
         } catch(err) {
             console.log(err);
-            return new HandleObj(false, err);
+            const error = new ErrorMessage('', err.message, '');
+            return new HandleObj(HttpStatus.InternalServerError, '' ,error);
         }
     }
 
@@ -141,10 +147,11 @@ export class BookRoomService {
                 .set({ isCancelled: true })
                 .where('id = :id', { id: bookingId })
                 .execute();
-            return new HandleObj(true, 201, 'cancel booking is successfully');
+            return new HandleObj(201, 'cancel booking is successfully');
         } catch (err) {
             console.log(err);
-            return new HandleObj(false, err);
+            const error = new ErrorMessage('', err.message, '');
+            return new HandleObj(HttpStatus.InternalServerError, '' ,error);
         }
     }
 

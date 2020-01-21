@@ -1,5 +1,7 @@
 import { HandleObj } from "../model/HandleModel";
 import { PermissionModel } from "../model/PermissionModel";
+import { HttpStatus, Session_Status } from "../constant";
+import { ErrorMessage } from "../model/ErrorMessageModel";
 
 export default class Common {
     public static mapExistsInTwoArray(source: any[], destination: any[]) {
@@ -37,13 +39,17 @@ export default class Common {
 
     public static getPermission(permission: PermissionModel): HandleObj {
         if (!permission.allow && !permission.user) {
-            return new HandleObj(false , 400, 'Token expired');
+            const invalidToken = Session_Status.InvalidToken;
+            const error = new ErrorMessage(invalidToken.mess, '', invalidToken.code);
+            return new HandleObj(HttpStatus.BadRequest, '', error);
         }
 
         if (!permission.allow && permission.user) {
-            return new HandleObj(false , 401, 'Not authorizer');
+            const forbidden = Session_Status.Forbidden;
+            const error = new ErrorMessage(forbidden.mess, '', forbidden.code);
+            return new HandleObj(HttpStatus.Forbidden, '', error);
         }
 
-        return new HandleObj(true, 200);
+        return new HandleObj(HttpStatus.Ok, '');
     }
 }

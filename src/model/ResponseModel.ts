@@ -1,10 +1,9 @@
-export class ResponseObj {
-    code: number;
+
+export class ResSuccess {
     message: string;
     data: any;
 
-    constructor(code: number, message: string, data?: any) {
-        this.code = code;
+    constructor( message: string, data?: any) {
         this.message = message;
         this.data = data;
     }
