@@ -11,6 +11,7 @@ createConnection(sqlConfig)
         connection.runMigrations();
         const bookingInstance = BookRoomService.getInstance();
         listenToBookingQueue(bookingInstance.handleBookingRooms);
+        console.log('connect SQL successfully');
     })
     .catch(err => {
         console.log('Error while connecting to the database', err);
@@ -18,9 +19,7 @@ createConnection(sqlConfig)
     })
 
 const app = createExpressServer(appConfig);
-
 app.listen(SERVER_PORT, () => console.log(`Server is running port ${SERVER_PORT}`));
-
 
 export default app;
 

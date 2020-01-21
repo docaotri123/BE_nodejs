@@ -16,10 +16,10 @@ export const sqlConfig: ConnectionOptions  = {
     password: SQL_PASSWORD,
     database: SQL_DATABASE,
     entities: [
-       "src/entity/**/*.ts"
+      __dirname + "/entity/*{.ts,.js}"
     ],
     migrations: [
-       "src/migration/**/*.ts"
+      __dirname + "/migration/*{.ts,.js}"
     ],
     cli: {
        entitiesDir: "src/entity",
@@ -35,10 +35,10 @@ export const sqlConfig_test: ConnectionOptions  = {
    password: SQL_PASSWORD,
    database: "test",
    entities: [
-      "src/entity/**/*.ts"
+      "src/entity/**/*{.js,.ts}"
    ],
    migrations: [
-      "src/migration/**/*.ts"
+      "src/migration/**/*{.js,.ts}"
    ],
    cli: {
       entitiesDir: "src/entity",
@@ -49,6 +49,6 @@ export const sqlConfig_test: ConnectionOptions  = {
 export const appConfig = {
    defaultErrorHandler: false,
    cors: true,
-   controllers: [__dirname + '/controller/**/*.ts'],
-   middlewares: [__dirname + '/middleware/*.ts']
+   controllers: [__dirname + '/controller/**/*{.ts,.js}'],
+   middlewares: [__dirname + '/middleware/*{.ts,.js}']
 }

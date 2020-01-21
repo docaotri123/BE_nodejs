@@ -72,6 +72,7 @@ export class RoomController {
 
         const roomInstance = RoomService.getInstance();
         const { code, mess, error } = await roomInstance.handleDeleteRoom(id);
+        res.status(code);
 
         if (error) {
             return new ResError(error);

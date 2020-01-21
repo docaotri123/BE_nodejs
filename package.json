@@ -4,6 +4,7 @@
   "description": "Awesome project developed with TypeORM.",
   "devDependencies": {
     "@types/express": "^4.17.2",
+    "@types/long": "^4.0.0",
     "@types/mocha": "^5.2.7",
     "@types/node": "^8.10.59",
     "chai": "^4.2.0",
@@ -54,13 +55,15 @@
     "all": true
   },
   "scripts": {
-    "start": "ts-node src/app.ts",
+    "start-dev": "ts-node src/app.ts",
     "watch": "nodemon --watch 'src/**/*.ts' --ignore 'src/test**/*.spec.ts' --exec nodemon src/app.ts",
     "unit-test": "DATABASE_NAME=test mocha -r ts-node/register --colors src/test/connectDB.ts src/test/service/*.spec.ts --exit",
     "coverage-unit": "nyc npm run unit-test",
     "integration-test": "DATABASE_NAME=test mocha -r ts-node/register --colors src/test/controller/*.spec.ts --exit",
     "coverage-integration": "nyc npm run integration-test",
     "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
-    "lint": "tslint -p tsconfig.json"
+    "lint": "tslint -p tsconfig.json",
+    "build": "rm -rf ./build && tsc",
+    "start": "node build/src/app.js"
   }
 }
