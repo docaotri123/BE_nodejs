@@ -43,8 +43,10 @@ export class UserService {
             
             await userRepo.insertUser(user);
 
-            return new HandleObj(HttpStatus.Created, User_Status.RegisterSuccess.mess);
+            return new HandleObj(HttpStatus.Created);
         } catch (err) {
+            console.log('lal');
+            
             console.log(err);
             const server = Server_Status.error;
             const error = new ErrorMessage(server.mess, err.message, server.code);
@@ -71,7 +73,7 @@ export class UserService {
 
             const token = jwt.sign({ user: user }, SECRET, {expiresIn: '24h'});
 
-            return new HandleObj(HttpStatus.Ok, User_Status.LoginSuccess.mess, null ,{token: token});
+            return new HandleObj(HttpStatus.Ok, null, null ,{token: token});
         } catch(err) {
             console.log(err);
             const server = Server_Status.error;

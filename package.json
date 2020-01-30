@@ -33,6 +33,8 @@
     "mysql2": "^2.0.2",
     "reflect-metadata": "^0.1.13",
     "routing-controllers": "^0.8.0",
+    "swagger-jsdoc": "^3.5.0",
+    "swagger-ui-express": "^4.1.3",
     "tsconfig-paths": "^3.9.0",
     "typeorm": "^0.2.21"
   },

@@ -15,13 +15,12 @@ export class UserController {
         @Res() res: Response) {
         const userService = UserService.getInstance();   
         const handle = await userService.registerUser(userBody);
-        const {code, mess, error} = handle;
-        res.status(code);
+        const {code, error} = handle;
 
         if (error) {
-            return new ResError(error);
+            return res.status(code).send(new ResError(error));
         }
-        return new ResSuccess(mess);
+        return res.status(code).send(new ResSuccess());
     }
 
     @Post('/sessions')
@@ -32,14 +31,12 @@ export class UserController {
         const username = loginModel.username;        
 
         const handle = await userService.handleLogin(username, loginModel.password);
-        const { code, mess, error, data } = handle;
-        res.status(code);
+        const { code, error, data } = handle;
 
         if (error) {
-            return new ResError(error);
+            return res.status(code).send(new ResError(error));
         }
-
-        return new ResSuccess(mess, data);
+        return res.status(code).send(new ResSuccess(null, data));
     }
 
 }

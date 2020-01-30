@@ -6,7 +6,7 @@ export class HandleObj {
     error: ErrorMessage;
     data: any;
 
-    constructor(code: number, mess: string, error?: ErrorMessage ,data?: any) {
+    constructor(code: number, mess?: string, error?: ErrorMessage ,data?: any) {
         this.code = code;
         this.mess = mess;
         this.error = error;

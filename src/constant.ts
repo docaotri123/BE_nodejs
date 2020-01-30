@@ -42,13 +42,13 @@ export const Server_Status = {
 }
 
 export const User_Status = {
-    RegisterSuccess: {mess: 'Register is successfully', code: '10'},
-    LoginSuccess: {mess: 'Login Succsessfully', code: '11'},
-    EmailExists: {mess: 'Email has exists', code: '12'},
-    InvalidCredentials: {mess: 'Invalid Credentials', code: '13'},
+    RegisterSuccess: {mess: 'Register is successfully', code: '1_0'},
+    LoginSuccess: {mess: 'Login Succsessfully', code: '1_1'},
+    EmailExists: {mess: 'Email has exists', code: '1_2'},
+    InvalidCredentials: {mess: 'Invalid Credentials', code: '1_3'},
 }
 
 export const Session_Status = {
-    Forbidden: {mess: 'You don’t have permission', code: '20'},
-    InvalidToken: {mess: 'Token invalid', code: '21'},
+    Forbidden: {mess: 'You don’t have permission', code: '2_0'},
+    InvalidToken: {mess: 'Token invalid', code: '2_1'},
 }
