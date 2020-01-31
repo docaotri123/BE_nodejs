@@ -38,17 +38,17 @@ export const HttpStatus = {
 };
 
 export const Server_Status = {
-    error: {mess: 'Server is error', code: '00'},
-}
+    error: {mess: 'Server is error', code: '0_0'},
+};
 
 export const User_Status = {
     RegisterSuccess: {mess: 'Register is successfully', code: '1_0'},
     LoginSuccess: {mess: 'Login Succsessfully', code: '1_1'},
     EmailExists: {mess: 'Email has exists', code: '1_2'},
     InvalidCredentials: {mess: 'Invalid Credentials', code: '1_3'},
-}
+};
 
 export const Session_Status = {
     Forbidden: {mess: 'You don’t have permission', code: '2_0'},
     InvalidToken: {mess: 'Token invalid', code: '2_1'},
-}
+};

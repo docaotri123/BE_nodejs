@@ -1,6 +1,6 @@
 import { Response } from "express";
 import { ResSuccess } from '../../model/ResponseModel';
-import { Post, Body, Res, JsonController } from 'routing-controllers';
+import { Post, Body, Res, JsonController, Get } from 'routing-controllers';
 import { UserModel } from '../../model/UserModel';
 import { LoginModel } from '../../model/LoginModel';
 import { UserService } from '../../service/v1.0/UserService';
@@ -9,8 +9,14 @@ import { ResError } from '../../model/ResError';
 @JsonController('/v1.0/user-management')
 export class UserController {
 
+    @Get('/users')
+    async ListUser(
+        @Res() res: Response) {
+        return res.status(200).send(new ResSuccess());
+    }
+
     @Post('/users')
-    async RegisterAccount(
+    async RegisterUser(
         @Body() userBody: UserModel,
         @Res() res: Response) {
         const userService = UserService.getInstance();   
