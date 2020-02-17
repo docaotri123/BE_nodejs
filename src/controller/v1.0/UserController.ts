@@ -6,13 +6,14 @@ import { LoginModel } from '../../model/LoginModel';
 import { UserService } from '../../service/v1.0/UserService';
 import { ResError } from '../../model/ResError';
 
-@JsonController('/v1.0/user-management')
+// @JsonController('/v1.0/user-management')
+@JsonController()
 export class UserController {
 
     @Get('/users')
     async ListUser(
         @Res() res: Response) {
-        return res.status(200).send(new ResSuccess());
+        return res.status(200).send(new ResSuccess('abc'));
     }
 
     @Post('/users')
