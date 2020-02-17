@@ -8,17 +8,17 @@ import * as swaggerUi from 'swagger-ui-express';
 import { swaggerConfigure } from './swagger/swagger.config';
 
 console.log('connect SQL');
-createConnection(sqlConfig)
-    .then((connection) => {
-        connection.runMigrations();
-        const bookingInstance = BookRoomService.getInstance();
-        listenToBookingQueue(bookingInstance.handleBookingRooms);
-        console.log('connect SQL successfully');
-    })
-    .catch(err => {
-        console.log('Error while connecting to the database', err);
-        return err;
-    });
+// createConnection(sqlConfig)
+//     .then((connection) => {
+//         connection.runMigrations();
+//         const bookingInstance = BookRoomService.getInstance();
+//         listenToBookingQueue(bookingInstance.handleBookingRooms);
+//         console.log('connect SQL successfully');
+//     })
+//     .catch(err => {
+//         console.log('Error while connecting to the database', err);
+//         return err;
+//     });
 
 const app = createExpressServer(appConfig);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerConfigure));
