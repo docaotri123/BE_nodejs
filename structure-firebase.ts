@@ -9,7 +9,7 @@ const accounts = [{
     updatedAt: 1452488445471,
     isActived: true,
     isBlocked: false,
-    social: 'facebook',
+    social: 'facebook' || null,
     role: 'admin' || 'admin_product' || 'customer'
 }
 ];
