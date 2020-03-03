@@ -1,15 +1,7 @@
 
 
 const accounts = [{
-    name: 'Tri Do',
-    email: 'dctri2197@email.com',
-    password: '...',
-    picture: 'url',
-    createdAt: 1452488445471, // milliseconds
-    updatedAt: 1452488445471,
-    isActived: true,
-    isBlocked: false,
-    social: 'facebook' || null,
+    user_id: '...',
     role: 'admin' || 'admin_product' || 'customer'
 }
 ];
