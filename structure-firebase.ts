@@ -2,6 +2,12 @@
 
 const accounts = [{
     user_id: '...',
+    email: '...',
+    phoneNumber: '',
+    displayName: '',
+    photoURL: '...',
+    emailVerified: true,
+    disabled: false,
     role: 'admin' || 'admin_product' || 'customer'
 }
 ];
