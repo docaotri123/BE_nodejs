@@ -6,9 +6,10 @@ const accounts = [{
     phoneNumber: '',
     displayName: '',
     photoURL: '...',
+    createdAt: 1583333336000,
     emailVerified: true,
     disabled: false,
-    role: 'admin' || 'admin_product' || 'customer'
+    role: 'admin' || 'admin_product' || 'consumer'
 }
 ];
 
@@ -37,10 +38,10 @@ const products = [
         images: ['url1', 'url2'],
         category: 'Motobike',
         brand: 'Sony',
-        typeMarket: 'app' || 'marketplace',
+        typeMarket: 'premium' || 'marketplace',
         owner: {
             account_id: '....',
-            name: 'admin',
+            displayName: 'admin',
             picture: 'url'
         },
         createdAt: 1452488445471,
@@ -57,7 +58,7 @@ const favourites = [
         originalPrice: 500,
         salelPrice: 400,
         discount: 20,
-        typeMarket: 'app' || 'marketplace',
+        typeMarket: 'premium' || 'marketplace',
         images: ['url1', 'url2']
     }
 ]
