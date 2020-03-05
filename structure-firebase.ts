@@ -13,6 +13,10 @@ const accounts = [{
 }
 ];
 
+const block_account = [{
+    account_id: '...'
+}]
+
 const brands = [
     {
         name: 'Honda' || 'Samsung',
