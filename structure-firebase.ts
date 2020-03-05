@@ -13,7 +13,7 @@ const accounts = [{
 }
 ];
 
-const block_account = [{
+const block_accounts = [{
     account_id: '...'
 }]
 
