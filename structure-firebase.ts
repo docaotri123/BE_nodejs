@@ -7,6 +7,7 @@ const accounts = [{
     displayName: '',
     photoURL: '...',
     createdAt: 1583333336000,
+    providerId: 'google.com',
     emailVerified: true,
     disabled: false,
     role: 'admin' || 'admin_product' || 'consumer'
