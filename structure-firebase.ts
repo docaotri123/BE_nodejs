@@ -1,7 +1,7 @@
 
 
 const accounts = [{
-    account_id: '...',
+    accountId: '...',
     email: '...',
     phoneNumber: '',
     phoneWhapsapp: '',
@@ -17,14 +17,14 @@ const accounts = [{
 
 const users = [
     {
-        user_id: '...',
+        userId: '...',
         photoURL: '...',
         phoneWhapsapp: ''
     }
 ]
 
 const block_accounts = [{
-    account_id: '...'
+    accountId: '...'
 }]
 
 const brands = [
@@ -54,7 +54,7 @@ const products = [
         brand: 'Sony',
         typeMarket: 'premium' || 'marketplace',
         owner: {
-            account_id: '....',
+            accountId: '....',
             displayName: 'admin',
             picture: 'url'
         },
@@ -66,8 +66,8 @@ const products = [
 const favourites = [
     {
         id: '....',
-        account_id: 'account1',
-        product_id: '....',
+        accountId: 'account1',
+        productId: '....',
         name: 'Future 2018',
         originalPrice: 500,
         salelPrice: 400,
