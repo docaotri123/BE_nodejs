@@ -18,7 +18,7 @@ const accounts = [{
 const users = [
     {
         user_id: '...',
-        pictureURL: '...',
+        photoURL: '...',
         phoneWhapsapp: ''
     }
 ]
