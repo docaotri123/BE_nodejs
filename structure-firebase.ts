@@ -15,6 +15,14 @@ const accounts = [{
 }
 ];
 
+const users = [
+    {
+        user_id: '...',
+        pictureURL: '...',
+        phoneWhapsapp: ''
+    }
+]
+
 const block_accounts = [{
     account_id: '...'
 }]
