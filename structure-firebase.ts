@@ -53,11 +53,11 @@ const products = [
         images: ['url1', 'url2'],
         category: 'Motobike',
         brand: 'Sony',
-        typeMarket: 'premium' || 'marketplace',
+        productType: 'premium' || 'marketplace',
         owner: {
             accountId: '....',
             displayName: 'admin',
-            picture: 'url'
+            photoURL: 'url'
         },
         createdAt: 1452488445471,
         updatedAt: 1452488445471
@@ -73,7 +73,7 @@ const favourites = [
         originalPrice: 500,
         salelPrice: 400,
         discount: 20,
-        typeMarket: 'premium' || 'marketplace',
+        productType: 'premium' || 'marketplace',
         images: ['url1', 'url2']
     }
 ]
