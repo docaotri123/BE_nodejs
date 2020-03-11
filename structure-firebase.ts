@@ -31,6 +31,7 @@ const block_accounts = [{
 const brands = [
     {
         name: 'Honda' || 'Samsung',
+        numberProduct: 10
     }
 ];
 
@@ -52,7 +53,10 @@ const products = [
         discount: 20,
         images: ['url1', 'url2'],
         category: 'Motobike',
-        brand: 'Sony',
+        brand: {
+            brandId: '...',
+            name: '...'
+        },
         productType: 'premium' || 'marketplace',
         owner: {
             accountId: '....',
