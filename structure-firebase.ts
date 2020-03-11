@@ -31,7 +31,7 @@ const block_accounts = [{
 const brands = [
     {
         name: 'Honda' || 'Samsung',
-        numberProduct: 10
+        numberProducts: 10
     }
 ];
 
