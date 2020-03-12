@@ -52,9 +52,9 @@ const products = [
         salelPrice: 400,
         discount: 20,
         images: ['url1', 'url2'],
-        categoryId: '...',
+        categoryId: '...', // index
         categoryName: 'Motobike',
-        brandId: '...',
+        brandId: '...', // index
         brandName: '...',
         productType: 'premium' || 'marketplace',
         owner: {
