@@ -52,9 +52,9 @@ const products = [
         salelPrice: 400,
         discount: 20,
         images: ['url1', 'url2'],
-        categoryId: '...', // index
+        categoryId: '...',
         categoryName: 'Motobike',
-        brandId: '...', // index
+        brandId: '...',
         brandName: '...',
         productType: 'premium' || 'marketplace',
         owner: {
@@ -70,8 +70,8 @@ const products = [
 const favourites = [
     {
         id: '....',
-        accountId: 'account1', // index
-        productId: '....', // index
+        accountId: 'account1',
+        productId: '....',
         name: 'Future 2018',
         originalPrice: 500,
         salelPrice: 400,
