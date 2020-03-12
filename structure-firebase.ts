@@ -70,8 +70,8 @@ const products = [
 const favourites = [
     {
         id: '....',
-        accountId: 'account1',
-        productId: '....',
+        accountId: 'account1', // index
+        productId: '....', // index
         name: 'Future 2018',
         originalPrice: 500,
         salelPrice: 400,
