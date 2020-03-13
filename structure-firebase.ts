@@ -44,6 +44,7 @@ const  categories =[
 
 const products = [
     {
+        id: '...',
         name: 'Future 2018',
         description: 'This is very useful with your health',
         size: '...',
@@ -52,10 +53,11 @@ const products = [
         salelPrice: 400,
         discount: 20,
         images: ['url1', 'url2'],
-        categoryId: '...',
-        categoryName: 'Motobike',
-        brandId: '...',
-        brandName: '...',
+        category: '...',
+        brand: {
+            id: '...',
+            name: '...'
+        },
         productType: 'premium' || 'marketplace',
         owner: {
             accountId: '....',
