@@ -95,4 +95,4 @@ const manageProduct = [
     {
         numberProducts: 1000,
     }
-]
+];
