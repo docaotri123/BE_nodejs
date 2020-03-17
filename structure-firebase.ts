@@ -13,6 +13,7 @@ const accounts = [{
     createdAt: 1583333336000,
     numberProducts: 10,
     numberFavourites: 10,
+    keywords: ['tri', 'do'],
     role: 'admin' || 'admin_product' || 'consumer'
 }
 ];
