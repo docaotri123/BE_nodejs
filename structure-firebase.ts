@@ -23,7 +23,7 @@ const users = [
         userId: '...',
         photoURL: '...',
         displayName: '',
-        phoneWhapsapp: ''
+        phoneWhatsapp: ''
     }
 ]
 
