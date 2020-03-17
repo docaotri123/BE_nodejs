@@ -11,6 +11,8 @@ const accounts = [{
     emailVerified: true,
     disabled: false,
     createdAt: 1583333336000,
+    numberProducts: 10,
+    numberFavourites: 10,
     role: 'admin' || 'admin_product' || 'consumer'
 }
 ];
@@ -23,10 +25,6 @@ const users = [
         phoneWhapsapp: ''
     }
 ]
-
-const block_accounts = [{
-    accountId: '...'
-}]
 
 const brands = [
     {
@@ -83,4 +81,18 @@ const favourites = [
     }
 ]
 
+const blockAccounts = [{
+    accountId: '...'
+}]
 
+const manageAccount = [
+    {
+        numberAccounts: 100
+    }
+]
+
+const manageProduct = [
+    {
+        numberProducts: 1000,
+    }
+]
