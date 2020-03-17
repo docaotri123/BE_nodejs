@@ -30,7 +30,8 @@ const users = [
 const brands = [
     {
         name: 'Honda' || 'Samsung',
-        numberProducts: 10
+        numberProductPremiums: 10,
+        numberProductMarkets: 5,
     }
 ];
 
@@ -94,6 +95,7 @@ const manageAccount = [
 
 const manageProduct = [
     {
-        numberProducts: 1000,
+        numberProductPremiums: 1000,
+        numberProductMarkets: 600,
     }
 ];
