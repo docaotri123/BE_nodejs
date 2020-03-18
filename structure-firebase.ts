@@ -89,7 +89,8 @@ const blockAccounts = [{
 
 const manageAccount = [
     {
-        numberAccounts: 100
+        numberAccounts: 100,
+        numberBlockAccounts: 5
     }
 ]
 
