@@ -11,7 +11,7 @@ const accounts = [{
     emailVerified: true,
     disabled: false,
     createdAt: 1583333336000,
-    numberProducts: 10, // for product type: marketplace
+    numberProductMarkets: 10, // for product type: marketplace
     numberFavourites: 10,
     keywords: ['tri', 'do'],
     role: 'admin' || 'admin_product' || 'consumer'
