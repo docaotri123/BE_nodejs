@@ -63,7 +63,8 @@ const products = [
         owner: {
             accountId: '....',
             displayName: 'admin',
-            photoURL: 'url'
+            photoURL: 'url',
+            phoneWhapsapp: '...'
         },
         createdAt: 1452488445471,
         updatedAt: 1452488445471
