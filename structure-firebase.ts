@@ -74,6 +74,7 @@ const products = [
 const favourites = [
     {
         id: '....',
+        createdAt: '...',
         accountId: 'account1',
         productId: '....',
         name: 'Future 2018',
