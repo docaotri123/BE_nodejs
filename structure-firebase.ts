@@ -4,7 +4,8 @@ const accounts = [{
     accountId: '...',
     email: '...',
     phoneNumber: '',
-    phoneWhapsapp: '',
+    countryCode: '84',
+    phoneWhapsapp: '84965528621',
     displayName: '',
     photoURL: '...',
     providerId: 'google.com',
@@ -23,7 +24,8 @@ const users = [
         userId: '...',
         photoURL: '...',
         displayName: '',
-        phoneWhatsapp: ''
+        countryCode: '84',
+        phoneWhatsapp: '84965528621'
     }
 ]
 
