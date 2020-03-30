@@ -32,8 +32,7 @@ const users = [
 const brands = [
     {
         name: 'Honda' || 'Samsung',
-        numberProductPremiums: 10,
-        numberProductMarkets: 5,
+        index: 0,
         keywords: []
     }
 ];
@@ -57,8 +56,8 @@ const products = [
         discount: 20,
         images: ['url1', 'url2'],
         category: '...',
-        brand: {
-            id: '...',
+        brand: { // id '' if input orther brand
+            id: '...' || '',
             name: '...'
         },
         productType: 'premium' || 'marketplace',
