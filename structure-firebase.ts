@@ -32,7 +32,8 @@ const users = [
 const brands = [
     {
         name: 'Honda' || 'Samsung',
-        index: 0,
+        oldIndex: -1,
+        newIndex: 0,
         keywords: []
     }
 ];
