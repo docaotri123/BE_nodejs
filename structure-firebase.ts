@@ -110,3 +110,11 @@ const registrationTokens = [
         token: '...'
     }
 ]
+
+const broadcastMessages = [
+    {
+        title: 'abc',
+        content: '...',
+        sendAt: 1583333336000
+    }
+]
