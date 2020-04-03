@@ -104,3 +104,9 @@ const manageProduct = [
         numberProductMarkets: 600,
     }
 ];
+
+const registrationTokens = [
+    {
+        token: '...'
+    }
+]
