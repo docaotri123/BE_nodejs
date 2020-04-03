@@ -33,6 +33,8 @@ const brands = [
     {
         name: 'Honda' || 'Samsung',
         index: 0,
+        numberProductPremiums: 5,
+        numberProductMarkets: 3,
         keywords: []
     }
 ];
