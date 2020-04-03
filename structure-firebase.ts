@@ -115,6 +115,7 @@ const broadcastMessages = [
     {
         title: 'abc',
         content: '...',
-        sendAt: 1583333336000
+        sendAt: 1583333336000,
+        isSend: false
     }
 ]
