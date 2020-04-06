@@ -107,6 +107,12 @@ const manageProduct = [
     }
 ];
 
+const manageBrand = [
+    {
+        numberBrands: 40
+    }
+];
+
 const registrationTokens = [
     {
         token: '...'
