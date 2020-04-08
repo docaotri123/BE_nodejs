@@ -58,7 +58,7 @@ const products = [
         discount: 20,
         images: ['url1', 'url2'],
         category: '...',
-        brand: { // id '' if input orther brand
+        brand: { // id '0' if input orther brand
             id: '...' || '',
             name: '...'
         },
@@ -122,7 +122,7 @@ const registrationTokens = [
 const broadcastMessages = [
     {
         title: 'abc',
-        content: '...',
+        body: '...',
         sendAt: 1583333336000,
         isSend: false
     }
