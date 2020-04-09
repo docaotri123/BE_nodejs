@@ -1,5 +1,6 @@
 
 
+// all timestamp: millisecond 
 const accounts = [{
     accountId: '...',
     email: '...',
@@ -48,7 +49,6 @@ const  categories =[
 
 const products = [
     {
-        id: '...',
         name: 'Future 2018',
         description: 'This is very useful with your health',
         size: '...',
@@ -76,7 +76,6 @@ const products = [
 
 const favourites = [
     {
-        id: '....',
         createdAt: '...',
         accountId: 'account1',
         productId: '....',
