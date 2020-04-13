@@ -126,3 +126,12 @@ const broadcastMessages = [
         isSend: false
     }
 ]
+
+const errors = [
+    {
+        nameFunction: 'signUp...',
+        request: '....',
+        error: '...',
+        date: '12/3/2020'
+    }
+]
