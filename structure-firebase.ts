@@ -132,6 +132,6 @@ const errors = [
         nameFunction: 'signUp...',
         request: '....',
         error: '...',
-        date: '12/3/2020'
+        date: 'Mon, 13 Apr 2020 07:44:15 GMT'
     }
 ]
