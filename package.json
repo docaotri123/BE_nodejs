@@ -57,7 +57,8 @@
     "all": true
   },
   "scripts": {
-    "start": "ts-node src/app.ts",
+    "start": "node build/src/app.js",
+    "start:dev": "ts-node src/app.ts",
     "watch": "nodemon --watch 'src/**/*.ts' --ignore 'src/test**/*.spec.ts' --exec nodemon src/app.ts",
     "unit-test": "DATABASE_NAME=test mocha -r ts-node/register --colors src/test/connectDB.ts src/test/service/*.spec.ts --exit",
     "coverage-unit": "nyc npm run unit-test",
