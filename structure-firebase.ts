@@ -23,6 +23,7 @@ const accounts = [{
 const users = [
     {
         userId: '...',
+        email: '...', // to update account and auth
         photoURL: '...',
         displayName: '',
         countryCode: '84',
