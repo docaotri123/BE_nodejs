@@ -129,11 +129,12 @@ const broadcastMessages = [
     }
 ]
 
-const errors = [
+// Check every new update of IOS and Android
+const setting = [
     {
-        nameFunction: 'signUp...',
-        request: '....',
-        error: '...',
-        date: 'Mon, 13 Apr 2020 07:44:15 GMT'
+        IOSVersion: '1.0.0',
+        AndroidVersion: '1.0.0',
+        numberUploadImagesMarketplace: 50, // number images of marketPlace when creating new product
+        numberUploadImagesPremium: 50
     }
 ]
