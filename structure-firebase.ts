@@ -20,6 +20,7 @@ const accounts = [{
 }
 ];
 
+// use for register account
 const users = [
     {
         userId: '...',
